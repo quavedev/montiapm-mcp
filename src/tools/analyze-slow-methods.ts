@@ -3,6 +3,7 @@ import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
 import { formatResponseTime, formatMetricsBreakdown } from '../utils/formatting.js';
+import { SortOrder } from '../utils/constants.js';
 
 export const analyzeSlowMethodsSchema = z.object({
   threshold: z.number().optional().default(500).describe('Response time threshold in milliseconds. Default: 500ms'),
@@ -171,7 +172,7 @@ export async function analyzeSlowMethods(
       endTime: input.endTime,
       limit: input.limit ?? 20,
       minValue: input.threshold ?? 500,
-      sortOrder: 'DSC',
+      sortOrder: SortOrder.DSC,
     },
   });
 

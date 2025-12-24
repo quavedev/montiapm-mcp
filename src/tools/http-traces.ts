@@ -3,6 +3,7 @@ import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
 import { formatResponseTime, formatMetricsBreakdown } from '../utils/formatting.js';
+import { SortOrder } from '../utils/constants.js';
 
 export const getHttpTracesSchema = z.object({
   startTime: z.number().optional().describe('Unix timestamp in milliseconds. Default: 1 hour ago'),
@@ -91,7 +92,7 @@ export async function getHttpTraces(
       minValue: input.minResponseTime,
       route: input.route,
       host: input.host,
-      sortOrder: 'DESC',
+      sortOrder: SortOrder.DSC,
     },
   });
 

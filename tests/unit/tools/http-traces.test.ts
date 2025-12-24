@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getHttpTraces } from '../../../src/tools/http-traces.js';
 import type { MontiGraphQLClient } from '../../../src/graphql/client.js';
+import { SortOrder } from '../../../src/utils/constants.js';
 
 describe('getHttpTraces', () => {
   const mockQuery = vi.fn();
@@ -124,7 +125,7 @@ describe('getHttpTraces', () => {
         minValue: 100,
         route: '/api/users',
         host: 'server-1',
-        sortOrder: 'DESC',
+        sortOrder: SortOrder.DSC,
       }),
     });
   });
