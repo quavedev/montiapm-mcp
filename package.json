@@ -1,6 +1,6 @@
 {
   "name": "@quave/montiapm-mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "MCP server for Monti APM - enables AI assistants to query Meteor application performance data",
   "type": "module",
   "main": "./dist/index.js",

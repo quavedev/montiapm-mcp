@@ -74,16 +74,20 @@ interface GetSystemMetricsResult {
 function formatMetricValue(metric: string, value: number): string {
   switch (metric) {
     case 'RAM_USAGE':
+    case 'TOTAL_SYSTEM_MEM':
+    case 'FREE_SYSTEM_MEM':
+    case 'USED_SYSTEM_MEM':
       return formatBytes(value);
     case 'CPU_USAGE':
       return formatPercentage(value);
     case 'SESSIONS':
+    case 'NEW_SESSIONS':
       return value.toString();
-    case 'EVENT_LOOP_LAG':
+    case 'MONGO_POOL_CHECKOUT_DELAY':
+    case 'MONGO_POOL_CHECKOUT_MAX_DELAY':
       return `${value.toFixed(2)}ms`;
-    case 'GC_MAJOR':
-    case 'GC_MINOR':
-      return `${value.toFixed(2)}ms`;
+    case 'MONGO_POOL_PENDING_CHECKOUTS':
+      return value.toString();
     default:
       return value.toString();
   }

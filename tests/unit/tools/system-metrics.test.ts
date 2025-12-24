@@ -140,7 +140,7 @@ describe('getSystemMetrics', () => {
     expect(result.hosts[0].percentiles.p50).toBe('150');
   });
 
-  it('should return EVENT_LOOP_LAG metrics in ms', async () => {
+  it('should return MONGO_POOL_CHECKOUT_DELAY metrics in ms', async () => {
     mockQuery.mockResolvedValueOnce({
       data: {
         meteorSystemMetrics: [
@@ -157,64 +157,64 @@ describe('getSystemMetrics', () => {
     });
 
     const result = await getSystemMetrics(mockClient, {
-      metric: 'EVENT_LOOP_LAG',
+      metric: 'MONGO_POOL_CHECKOUT_DELAY',
       resolution: 'RES_1MIN',
       groupByHost: false,
     });
 
-    expect(result.metric).toBe('EVENT_LOOP_LAG');
+    expect(result.metric).toBe('MONGO_POOL_CHECKOUT_DELAY');
     expect(result.hosts[0].percentiles.p50).toBe('10.50ms');
   });
 
-  it('should return GC_MAJOR metrics in ms', async () => {
+  it('should return NEW_SESSIONS metrics', async () => {
     mockQuery.mockResolvedValueOnce({
       data: {
         meteorSystemMetrics: [
           {
             host: null,
-            points: [[Date.now(), 100.5]],
-            p50: 100.5,
-            p95: 140.2,
-            p99: 145.0,
-            max: 150.8,
+            points: [[Date.now(), 100]],
+            p50: 100,
+            p95: 140,
+            p99: 145,
+            max: 150,
           },
         ],
       },
     });
 
     const result = await getSystemMetrics(mockClient, {
-      metric: 'GC_MAJOR',
+      metric: 'NEW_SESSIONS',
       resolution: 'RES_1MIN',
       groupByHost: false,
     });
 
-    expect(result.metric).toBe('GC_MAJOR');
-    expect(result.hosts[0].percentiles.p50).toBe('100.50ms');
+    expect(result.metric).toBe('NEW_SESSIONS');
+    expect(result.hosts[0].percentiles.p50).toBe('100');
   });
 
-  it('should return GC_MINOR metrics in ms', async () => {
+  it('should return FREE_SYSTEM_MEM metrics in bytes format', async () => {
     mockQuery.mockResolvedValueOnce({
       data: {
         meteorSystemMetrics: [
           {
             host: null,
-            points: [[Date.now(), 10.25]],
-            p50: 10.25,
-            p95: 14.75,
-            p99: 15.0,
-            max: 15.5,
+            points: [[Date.now(), 1024 * 1024 * 1024]],
+            p50: 1024 * 1024 * 1024,
+            p95: 1024 * 1024 * 900,
+            p99: 1024 * 1024 * 800,
+            max: 1024 * 1024 * 700,
           },
         ],
       },
     });
 
     const result = await getSystemMetrics(mockClient, {
-      metric: 'GC_MINOR',
+      metric: 'FREE_SYSTEM_MEM',
       resolution: 'RES_1MIN',
       groupByHost: false,
     });
 
-    expect(result.metric).toBe('GC_MINOR');
-    expect(result.hosts[0].percentiles.p50).toBe('10.25ms');
+    expect(result.metric).toBe('FREE_SYSTEM_MEM');
+    expect(result.hosts[0].percentiles.p50).toBe('1.00 GB');
   });
 });

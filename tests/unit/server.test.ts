@@ -1,18 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { http, HttpResponse } from 'msw';
 import { server as mswServer } from '../setup.js';
 import { createMontiMcpServer } from '../../src/server.js';
 
-// Mock handler type
-type ToolHandler = (params: unknown) => Promise<{ content: Array<{ type: string; text: string }> }>;
-
 describe('createMontiMcpServer', () => {
-  // Capture registered tool handlers
-  const registeredTools: Map<string, { config: unknown; handler: ToolHandler }> = new Map();
-
   beforeEach(() => {
-    registeredTools.clear();
-
     // Set up MSW handlers for Monti APM API
     mswServer.use(
       http.post('https://api.montiapm.com/auth', () => {
@@ -56,9 +48,6 @@ describe('createMontiMcpServer', () => {
   describe('tool handler execution', () => {
     // This tests the tool handlers by capturing them during registration
     it('should execute get_method_traces handler', async () => {
-      const originalRegisterTool = vi.fn();
-      let capturedHandler: ToolHandler | null = null;
-
       // Create a spy to capture the handler
       const server = createMontiMcpServer({
         appId: 'test-app-id',

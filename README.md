@@ -6,6 +6,7 @@ An MCP (Model Context Protocol) server that enables AI assistants to interact wi
 
 - Query method execution traces with performance breakdowns
 - Retrieve subscription/publication performance data
+- Monitor HTTP request performance and errors
 - Monitor system metrics (RAM, CPU, sessions, MongoDB pool)
 - Track error rates and trends
 - Analyze slow methods with actionable recommendations
@@ -86,6 +87,17 @@ Analyze subscription performance:
 "Get traces for the 'userProfile' publication"
 ```
 
+### Monitoring HTTP Routes
+
+Analyze HTTP request performance:
+
+```
+"Show me slow HTTP requests"
+"Which API routes are taking the longest?"
+"Get traces for the /api/users route"
+"Are there any HTTP errors in my app?"
+```
+
 ### System Health
 
 Check overall system health:
@@ -126,6 +138,7 @@ Get actionable advice:
 | `get_method_traces` | Retrieve method execution traces with time spent in DB, compute, HTTP, etc. |
 | `get_trace_detail` | Get detailed events timeline for a specific trace |
 | `get_subscription_traces` | Retrieve publication/subscription traces |
+| `get_http_traces` | Retrieve HTTP request traces with performance metrics |
 
 ### Metrics
 

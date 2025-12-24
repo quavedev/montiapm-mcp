@@ -166,7 +166,7 @@ describe('getTraceDetail', () => {
 
     expect(result.breakdown).toContain('DB: 600ms');
     expect(result.breakdown).toContain('Compute: 200ms');
-    expect(result.metrics.db).toBe(600);
-    expect(result.metrics.compute).toBe(200);
+    expect(result.metrics!.db).toBe(600);
+    expect(result.metrics!.compute).toBe(200);
   });
 });

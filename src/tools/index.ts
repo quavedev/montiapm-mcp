@@ -47,3 +47,9 @@ export {
   getHealthSummarySchema,
   type GetHealthSummaryInput,
 } from './health-summary.js';
+
+export {
+  getHttpTraces,
+  getHttpTracesSchema,
+  type GetHttpTracesInput,
+} from './http-traces.js';

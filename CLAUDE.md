@@ -65,6 +65,7 @@ Requires valid `MONTI_APP_ID` and `MONTI_APP_SECRET` environment variables.
 | `get_method_traces` | Retrieve method execution traces |
 | `get_trace_detail` | Get detailed events for a specific trace |
 | `get_subscription_traces` | Retrieve subscription/publication traces |
+| `get_http_traces` | Retrieve HTTP request traces |
 | `get_observer_traces` | Retrieve observer traces |
 | `get_system_metrics` | Retrieve system metrics (RAM, CPU, Sessions) |
 | `get_error_metrics` | Retrieve error count metrics |
@@ -73,6 +74,12 @@ Requires valid `MONTI_APP_ID` and `MONTI_APP_SECRET` environment variables.
 | `get_health_summary` | Get overall application health summary |
 
 ## API Reference
+
+### Monti APM Documentation
+Full Monti APM documentation is available locally in `.agent/docs/`. This includes:
+- Dashboard guides (methods, pubsub, system, live queries)
+- Academy tutorials (debugging, optimization, observers)
+- API reference and getting started guides
 
 ### Monti APM Endpoints
 - **Auth:** `POST https://api.montiapm.com/auth`

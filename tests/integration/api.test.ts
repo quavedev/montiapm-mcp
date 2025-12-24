@@ -5,6 +5,7 @@ import {
   getMethodTraces,
   getTraceDetail,
   getSubscriptionTraces,
+  getHttpTraces,
   getSystemMetrics,
   getErrorMetrics,
   analyzeSlowMethods,
@@ -229,6 +230,79 @@ describe('Monti APM API Integration', () => {
         expect(trace).toHaveProperty('publication');
         expect(trace).toHaveProperty('responseTime');
       }
+    });
+  });
+
+  // ============================================
+  // HTTP Traces Tests
+  // ============================================
+  describe('HTTP Traces', () => {
+    it.skipIf(!shouldRun)('should fetch HTTP traces', async () => {
+      const result = await getHttpTraces(graphqlClient, {
+        limit: 10,
+      });
+
+      expect(result).toHaveProperty('count');
+      expect(result).toHaveProperty('traces');
+      expect(result).toHaveProperty('summary');
+      expect(Array.isArray(result.traces)).toBe(true);
+    });
+
+    it.skipIf(!shouldRun)('should filter HTTP traces by time range', async () => {
+      const result = await getHttpTraces(graphqlClient, {
+        startTime: oneDayAgo,
+        endTime: now,
+        limit: 5,
+      });
+
+      expect(result).toHaveProperty('count');
+      expect(result.traces.length).toBeLessThanOrEqual(5);
+    });
+
+    it.skipIf(!shouldRun)('should return proper HTTP trace structure', async () => {
+      const result = await getHttpTraces(graphqlClient, {
+        limit: 1,
+      });
+
+      if (result.traces.length > 0) {
+        const trace = result.traces[0];
+        expect(trace).toHaveProperty('id');
+        expect(trace).toHaveProperty('route');
+        expect(trace).toHaveProperty('responseTime');
+        expect(trace).toHaveProperty('errored');
+      }
+    });
+
+    it.skipIf(!shouldRun)('should filter by minimum response time', async () => {
+      const result = await getHttpTraces(graphqlClient, {
+        minResponseTime: 100,
+        limit: 10,
+      });
+
+      expect(result).toHaveProperty('count');
+      for (const trace of result.traces) {
+        expect(trace.responseTimeMs).toBeGreaterThanOrEqual(100);
+      }
+    });
+
+    it.skipIf(!shouldRun)('should include error count in summary', async () => {
+      const result = await getHttpTraces(graphqlClient, {
+        limit: 10,
+      });
+
+      expect(result.summary).toHaveProperty('errorCount');
+      expect(typeof result.summary.errorCount).toBe('number');
+    });
+
+    it.skipIf(!shouldRun)('should handle extended time range (1 week)', async () => {
+      const result = await getHttpTraces(graphqlClient, {
+        startTime: oneWeekAgo,
+        endTime: now,
+        limit: 5,
+      });
+
+      expect(result).toHaveProperty('count');
+      expect(Array.isArray(result.traces)).toBe(true);
     });
   });
 

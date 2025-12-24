@@ -18,6 +18,8 @@ import {
   analyzeBottlenecksSchema,
   getHealthSummary,
   getHealthSummarySchema,
+  getHttpTraces,
+  getHttpTracesSchema,
 } from './tools/index.js';
 
 export interface MontiMcpServerOptions {
@@ -175,6 +177,23 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     async (params) => {
       const input = getHealthSummarySchema.parse(params);
       const result = await getHealthSummary(graphqlClient, input);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'get_http_traces',
+    {
+      title: 'Get HTTP Traces',
+      description:
+        'Retrieve HTTP request traces with performance metrics. Shows response times and breakdown of time spent in DB, compute, HTTP calls, etc. for HTTP routes. IMPORTANT: Default time range is last 1 hour. If no data is returned, try a wider startTime (e.g., 24 hours or 1 week ago in milliseconds).',
+      inputSchema: getHttpTracesSchema.shape,
+    },
+    async (params) => {
+      const input = getHttpTracesSchema.parse(params);
+      const result = await getHttpTraces(graphqlClient, input);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };
