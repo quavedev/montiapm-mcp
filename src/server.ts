@@ -50,7 +50,7 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     {
       title: 'Get Method Traces',
       description:
-        'Retrieve Meteor method execution traces with performance metrics. Returns traces sorted by response time with breakdown of time spent in DB, compute, HTTP, etc.',
+        'Retrieve Meteor method execution traces with performance metrics. Returns traces sorted by response time with breakdown of time spent in DB, compute, HTTP, etc. IMPORTANT: Default time range is last 1 hour. If no data is returned, try a wider startTime (e.g., 24 hours or 1 week ago in milliseconds).',
       inputSchema: getMethodTracesSchema.shape,
     },
     async (params) => {
@@ -84,7 +84,7 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     {
       title: 'Get Subscription Traces',
       description:
-        'Retrieve Meteor publication/subscription traces. Shows how long subscriptions take to become ready and what time is spent in DB operations.',
+        'Retrieve Meteor publication/subscription traces. Shows how long subscriptions take to become ready and what time is spent in DB operations. IMPORTANT: Default time range is last 1 hour. If no data is returned (especially when filtering by publication name), try a wider startTime (e.g., 24 hours or 1 week ago in milliseconds).',
       inputSchema: getSubscriptionTracesSchema.shape,
     },
     async (params) => {
@@ -135,7 +135,7 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     {
       title: 'Analyze Slow Methods',
       description:
-        'Analyze and summarize slow method patterns. Identifies methods above a response time threshold and provides recommendations for optimization.',
+        'Analyze and summarize slow method patterns. Identifies methods above a response time threshold and provides recommendations for optimization. IMPORTANT: Default time range is last 1 hour. For comprehensive analysis, use a wider startTime (e.g., 24 hours or 1 week ago).',
       inputSchema: analyzeSlowMethodsSchema.shape,
     },
     async (params) => {
@@ -152,7 +152,7 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     {
       title: 'Analyze Performance Bottlenecks',
       description:
-        'Comprehensive analysis of performance bottlenecks across methods, publications, and system resources. Identifies high-priority issues with recommendations.',
+        'Comprehensive analysis of performance bottlenecks across methods, publications, and system resources. Identifies high-priority issues with recommendations. IMPORTANT: Default time range is last 1 hour. For comprehensive analysis, use a wider startTime (e.g., 24 hours or 1 week ago).',
       inputSchema: analyzeBottlenecksSchema.shape,
     },
     async (params) => {
@@ -169,7 +169,7 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     {
       title: 'Get Health Summary',
       description:
-        'Get an overall health summary of the application including a health score, key metrics, and actionable insights.',
+        'Get an overall health summary of the application including a health score, key metrics, and actionable insights. IMPORTANT: Default time range is last 1 hour. For a more representative summary, use a wider startTime (e.g., 24 hours ago).',
       inputSchema: getHealthSummarySchema.shape,
     },
     async (params) => {
