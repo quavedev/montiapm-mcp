@@ -1,0 +1,72 @@
+{
+  "name": "@quave/montiapm-mcp",
+  "version": "1.0.1",
+  "description": "MCP server for Monti APM - enables AI assistants to query Meteor application performance data",
+  "type": "module",
+  "main": "./dist/index.js",
+  "bin": {
+    "montiapm-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "fetch-schema": "tsx scripts/fetch-schema.ts",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "codegen:watch": "graphql-codegen --config codegen.ts --watch",
+    "typecheck": "tsc --noEmit",
+    "typecheck:all": "tsc --noEmit -p tsconfig.test.json"
+  },
+  "keywords": [
+    "mcp",
+    "monti",
+    "apm",
+    "meteor",
+    "performance",
+    "monitoring",
+    "graphql"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quavedev/montiapm-mcp.git"
+  },
+  "homepage": "https://github.com/quavedev/montiapm-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/quavedev/montiapm-mcp/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.11.8",
+    "@graphql-tools/executor-http": "^3.0.7",
+    "@graphql-tools/url-loader": "^9.0.5",
+    "@graphql-tools/wrap": "^11.1.2",
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "cross-fetch": "^4.0.0",
+    "graphql": "^16.9.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.2",
+    "@graphql-codegen/typed-document-node": "^5.0.9",
+    "@graphql-codegen/typescript": "^4.0.9",
+    "@graphql-codegen/typescript-operations": "^4.2.3",
+    "@parcel/watcher": "^2.4.1",
+    "@types/node": "^22.9.0",
+    "@vitest/coverage-v8": "^2.1.9",
+    "msw": "^2.6.4",
+    "tsup": "^8.5.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

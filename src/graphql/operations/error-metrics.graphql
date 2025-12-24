@@ -1,0 +1,103 @@
+query GetErrorMetrics(
+  $metric: MeteorErrorMetricsEnum!
+  $startTime: Float
+  $endTime: Float
+  $resolution: MeteorMetricResolution
+  $message: String
+  $type: MeteorErrorTypeEnum
+  $status: MeteorErrorStatusEnum
+) {
+  meteorErrorMetrics(
+    metric: $metric
+    startTime: $startTime
+    endTime: $endTime
+    resolution: $resolution
+    message: $message
+    type: $type
+    status: $status
+  ) {
+    host
+    points
+    percentile(value: 95)
+  }
+}
+
+query GetErrorTraces(
+  $startTime: Float
+  $endTime: Float
+  $limit: Float
+  $minValue: Float
+  $maxValue: Float
+  $message: String
+  $type: MeteorErrorTypeEnum
+  $status: MeteorErrorStatusEnum
+  $sortOrder: SortOrderEnum
+  $sortField: TraceSortEnum
+) {
+  meteorErrorTraces(
+    startTime: $startTime
+    endTime: $endTime
+    limit: $limit
+    minValue: $minValue
+    maxValue: $maxValue
+    message: $message
+    type: $type
+    status: $status
+    sortOrder: $sortOrder
+    sortField: $sortField
+  ) {
+    id
+    type
+    message
+    stacks
+    time
+    host
+    subType
+  }
+}
+
+query GetErrorTrace($traceId: String!) {
+  meteorErrorTrace(traceId: $traceId) {
+    id
+    type
+    message
+    stacks
+    time
+    host
+    subType
+    info {
+      browser
+      userId
+      resolution
+      ip
+      clientArch
+      url
+    }
+  }
+}
+
+query GetErrorBreakdown(
+  $startTime: Float
+  $endTime: Float
+  $limit: Float
+  $sortOrder: SortOrderEnum
+  $sortField: MeteorErrorBreakdownSortEnum!
+  $type: MeteorErrorTypeEnum
+  $status: MeteorErrorStatusEnum
+) {
+  meteorErrorBreakdown(
+    startTime: $startTime
+    endTime: $endTime
+    limit: $limit
+    sortOrder: $sortOrder
+    sortField: $sortField
+    type: $type
+    status: $status
+  ) {
+    message
+    status
+    type
+    count
+    lastSeenTime
+  }
+}

@@ -1,0 +1,33 @@
+# Agent configuration for Monti APM MCP Server
+name: "@quave/montiapm-mcp"
+description: MCP server for Monti APM performance monitoring
+
+# Project-specific settings
+settings:
+  # Prefer Apollo Client for GraphQL
+  graphql_client: apollo
+  # Use Vitest for testing
+  test_framework: vitest
+  # TypeScript with strict mode
+  typescript: strict
+  # TDD approach
+  development_approach: test_driven
+
+# Important files for context
+context_files:
+  - CLAUDE.md
+  - src/graphql/operations/*.graphql
+  - src/tools/*.ts
+  - src/auth/client.ts
+  - src/graphql/client.ts
+
+# Files to ignore (auto-generated)
+ignore_files:
+  - src/graphql/generated/**
+  - dist/**
+  - node_modules/**
+
+# API documentation reference
+documentation:
+  monti_apm_api: https://api.montiapm.com/docs/explore.html
+  monti_apm_docs: https://docs.montiapm.com/graphql-api

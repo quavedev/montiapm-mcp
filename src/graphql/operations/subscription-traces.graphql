@@ -1,0 +1,85 @@
+query GetPubTraces(
+  $startTime: Float
+  $endTime: Float
+  $limit: Float
+  $minValue: Float
+  $maxValue: Float
+  $publication: String
+  $sortOrder: SortOrderEnum
+  $sortField: TraceSortEnum
+) {
+  meteorPubTraces(
+    startTime: $startTime
+    endTime: $endTime
+    limit: $limit
+    minValue: $minValue
+    maxValue: $maxValue
+    publication: $publication
+    sortOrder: $sortOrder
+    sortField: $sortField
+  ) {
+    id
+    publication
+    host
+    time
+    type
+    totalValue
+    errored
+    metrics {
+      total
+      wait
+      waitedOn
+      db
+      compute
+      http
+      email
+      async
+      fs
+    }
+  }
+}
+
+query GetPubTrace($traceId: String!) {
+  meteorPubTrace(traceId: $traceId) {
+    id
+    publication
+    host
+    time
+    type
+    totalValue
+    errored
+    metrics {
+      total
+      wait
+      waitedOn
+      db
+      compute
+      http
+      email
+      async
+      fs
+    }
+    events
+    stacks
+  }
+}
+
+query GetPubMetrics(
+  $startTime: Float
+  $endTime: Float
+  $resolution: MeteorMetricResolution
+  $publication: String
+  $metric: MeteorPubMetricsEnum!
+) {
+  meteorPubMetrics(
+    startTime: $startTime
+    endTime: $endTime
+    resolution: $resolution
+    publication: $publication
+    metric: $metric
+  ) {
+    host
+    points
+    percentile(value: 95)
+  }
+}

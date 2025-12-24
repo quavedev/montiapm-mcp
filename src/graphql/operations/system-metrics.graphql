@@ -1,0 +1,23 @@
+query GetSystemMetrics(
+  $metric: MeteorSystemMetricsEnum!
+  $startTime: Float
+  $endTime: Float
+  $resolution: MeteorMetricResolution
+  $groupByHost: Boolean
+) {
+  meteorSystemMetrics(
+    metric: $metric
+    startTime: $startTime
+    endTime: $endTime
+    resolution: $resolution
+    groupByHost: $groupByHost
+  ) {
+    host
+    points
+    percentile(value: 50)
+    p50: percentile(value: 50)
+    p95: percentile(value: 95)
+    p99: percentile(value: 99)
+    max: percentile(value: 100)
+  }
+}

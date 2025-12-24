@@ -1,0 +1,85 @@
+query GetMethodTraces(
+  $startTime: Float
+  $endTime: Float
+  $limit: Float
+  $minValue: Float
+  $maxValue: Float
+  $method: String
+  $sortOrder: SortOrderEnum
+  $sortField: TraceSortEnum
+) {
+  meteorMethodTraces(
+    startTime: $startTime
+    endTime: $endTime
+    limit: $limit
+    minValue: $minValue
+    maxValue: $maxValue
+    method: $method
+    sortOrder: $sortOrder
+    sortField: $sortField
+  ) {
+    id
+    method
+    host
+    time
+    type
+    totalValue
+    errored
+    metrics {
+      total
+      wait
+      waitedOn
+      db
+      compute
+      http
+      email
+      async
+      fs
+    }
+  }
+}
+
+query GetMethodTrace($traceId: String!) {
+  meteorMethodTrace(traceId: $traceId) {
+    id
+    method
+    host
+    time
+    type
+    totalValue
+    errored
+    metrics {
+      total
+      wait
+      waitedOn
+      db
+      compute
+      http
+      email
+      async
+      fs
+    }
+    events
+    stacks
+  }
+}
+
+query GetMethodMetrics(
+  $startTime: Float
+  $endTime: Float
+  $resolution: MeteorMetricResolution
+  $method: String
+  $metric: MeteorMethodMetricsEnum!
+) {
+  meteorMethodMetrics(
+    startTime: $startTime
+    endTime: $endTime
+    resolution: $resolution
+    method: $method
+    metric: $metric
+  ) {
+    host
+    points
+    percentile(value: 95)
+  }
+}
