@@ -32,7 +32,7 @@ describe('generateSubagentTemplate', () => {
     });
 
     it('should include model field', () => {
-      expect(template).toMatch(/model: sonnet/);
+      expect(template).toMatch(/model: opus/);
     });
 
     it('should close frontmatter', () => {

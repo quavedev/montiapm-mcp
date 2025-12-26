@@ -4,6 +4,7 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import * as readline from 'node:readline';
 import { generateSubagentTemplate } from './template.js';
 
 const DEFAULT_OUTPUT_PATH = '.claude/agents/meteor-performance.md';
@@ -46,6 +47,24 @@ function ensureDirectoryExists(filePath: string): void {
 }
 
 /**
+ * Prompt the user for confirmation.
+ */
+function promptConfirmation(question: string): Promise<boolean> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      rl.close();
+      const normalized = answer.toLowerCase().trim();
+      resolve(normalized === 'y' || normalized === 'yes');
+    });
+  });
+}
+
+/**
  * Handle the --generate-agent command.
  */
 export async function handleGenerateAgent(args: string[]): Promise<void> {
@@ -66,10 +85,13 @@ export async function handleGenerateAgent(args: string[]): Promise<void> {
 
   // Check if file exists
   if (fs.existsSync(absolutePath) && !options.force) {
-    console.error(`Error: File already exists at ${absolutePath}`);
-    console.error('Use --force to overwrite.');
-    process.exit(1);
-    return; // Ensure we don't continue after exit
+    const shouldOverwrite = await promptConfirmation(
+      `Agent already exists at ${absolutePath}. Overwrite? (y/N) `,
+    );
+    if (!shouldOverwrite) {
+      console.log('Aborted.');
+      return;
+    }
   }
 
   // Ensure directory exists

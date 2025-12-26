@@ -18,7 +18,7 @@ description: >
   or system resource issues. Queries live Monti APM data and provides documentation-backed
   recommendations.
 tools: Read, Grep, Glob, Bash, mcp__montiapm__get_method_traces, mcp__montiapm__get_subscription_traces, mcp__montiapm__get_http_traces, mcp__montiapm__get_system_metrics, mcp__montiapm__get_error_metrics, mcp__montiapm__analyze_slow_methods, mcp__montiapm__analyze_performance_bottlenecks, mcp__montiapm__get_health_summary, mcp__montiapm__get_optimization_advice, mcp__montiapm__explain_metric
-model: sonnet
+model: opus
 ---`;
 }
 

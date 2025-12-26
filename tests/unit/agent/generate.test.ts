@@ -11,6 +11,16 @@ vi.mock('node:fs', () => ({
   writeFileSync: vi.fn(),
 }));
 
+// Mock readline module
+const mockQuestion = vi.fn();
+const mockClose = vi.fn();
+vi.mock('node:readline', () => ({
+  createInterface: vi.fn(() => ({
+    question: mockQuestion,
+    close: mockClose,
+  })),
+}));
+
 // Import the mocked module
 import * as fs from 'node:fs';
 
@@ -76,6 +86,8 @@ describe('handleGenerateAgent', () => {
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as () => never);
     mockExistsSync.mockReturnValue(false);
+    mockQuestion.mockReset();
+    mockClose.mockReset();
   });
 
   afterEach(() => {
@@ -126,19 +138,35 @@ describe('handleGenerateAgent', () => {
     );
   });
 
-  it('should error when file exists and no --force', async () => {
+  it('should prompt and abort when file exists and user declines', async () => {
     mockExistsSync.mockReturnValue(true);
+    mockQuestion.mockImplementation((_question: string, callback: (answer: string) => void) => {
+      callback('n');
+    });
 
     await handleGenerateAgent(['--generate-agent']);
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('File already exists'),
+    expect(mockQuestion).toHaveBeenCalledWith(
+      expect.stringContaining('Overwrite?'),
+      expect.any(Function),
     );
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('--force'),
-    );
-    expect(processExitSpy).toHaveBeenCalledWith(1);
+    expect(consoleLogSpy).toHaveBeenCalledWith('Aborted.');
     expect(mockWriteFileSync).not.toHaveBeenCalled();
+  });
+
+  it('should prompt and overwrite when file exists and user confirms', async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockQuestion.mockImplementation((_question: string, callback: (answer: string) => void) => {
+      callback('y');
+    });
+
+    await handleGenerateAgent(['--generate-agent']);
+
+    expect(mockQuestion).toHaveBeenCalledWith(
+      expect.stringContaining('Overwrite?'),
+      expect.any(Function),
+    );
+    expect(mockWriteFileSync).toHaveBeenCalled();
   });
 
   it('should overwrite when file exists and --force is passed', async () => {
