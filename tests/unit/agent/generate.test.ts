@@ -77,14 +77,14 @@ describe('handleGenerateAgent', () => {
   const mockWriteFileSync = vi.mocked(fs.writeFileSync);
 
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
-  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
-  let processExitSpy: ReturnType<typeof vi.spyOn>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let processExitSpy: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    processExitSpy = vi.spyOn(process, 'exit').mockImplementation((() => {}) as () => never);
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => undefined as never);
     mockExistsSync.mockReturnValue(false);
     mockQuestion.mockReset();
     mockClose.mockReset();
@@ -207,7 +207,7 @@ describe('handleGenerateAgent', () => {
     await handleGenerateAgent(['--generate-agent']);
 
     // Check that helpful information is logged
-    const allLogCalls = consoleLogSpy.mock.calls.map(call => call[0]);
+    const allLogCalls = consoleLogSpy.mock.calls.map(call => String(call[0]));
     expect(allLogCalls.some(msg => msg.includes('Analyzing performance issues'))).toBe(true);
     expect(allLogCalls.some(msg => msg.includes('optimization recommendations'))).toBe(true);
   });

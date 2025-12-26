@@ -11,6 +11,7 @@ import {
   analyzeSlowMethods,
   analyzeBottlenecks,
   getHealthSummary,
+  getOptimizationAdvice,
 } from '../../src/tools/index.js';
 
 /**
@@ -635,6 +636,158 @@ describe('Monti APM API Integration', () => {
 
       expect(['Healthy', 'Good', 'Degraded', 'Critical']).toContain(result.health.status);
       expect(['green', 'yellow', 'orange', 'red']).toContain(result.health.color);
+    });
+  });
+
+  // ============================================
+  // Optimization Advice Tests
+  // ============================================
+  describe('Optimization Advice', () => {
+    it.skipIf(!shouldRun)('should get optimization advice for methods category', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+      });
+
+      expect(result).toHaveProperty('category', 'methods');
+      expect(result).toHaveProperty('itemsAnalyzed');
+      expect(result).toHaveProperty('issues');
+      expect(result).toHaveProperty('recommendations');
+      expect(result).toHaveProperty('summary');
+      expect(typeof result.itemsAnalyzed).toBe('number');
+      expect(Array.isArray(result.issues)).toBe(true);
+      expect(Array.isArray(result.recommendations)).toBe(true);
+    });
+
+    it.skipIf(!shouldRun)('should get optimization advice for publications category', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'publications',
+      });
+
+      expect(result).toHaveProperty('category', 'publications');
+      expect(result).toHaveProperty('itemsAnalyzed');
+      expect(result).toHaveProperty('issues');
+      expect(result).toHaveProperty('recommendations');
+      expect(result).toHaveProperty('summary');
+      expect(typeof result.itemsAnalyzed).toBe('number');
+      expect(Array.isArray(result.issues)).toBe(true);
+      expect(Array.isArray(result.recommendations)).toBe(true);
+    });
+
+    it.skipIf(!shouldRun)('should get optimization advice for system category', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'system',
+      });
+
+      expect(result).toHaveProperty('category', 'system');
+      expect(result).toHaveProperty('itemsAnalyzed');
+      expect(result).toHaveProperty('issues');
+      expect(result).toHaveProperty('recommendations');
+      expect(result).toHaveProperty('summary');
+      expect(typeof result.itemsAnalyzed).toBe('number');
+      expect(Array.isArray(result.issues)).toBe(true);
+      expect(Array.isArray(result.recommendations)).toBe(true);
+    });
+
+    it.skipIf(!shouldRun)('should return aggregate stats for methods', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+        limit: 10,
+      });
+
+      if (result.itemsAnalyzed > 0) {
+        expect(result).toHaveProperty('aggregateStats');
+        expect(result.aggregateStats).toHaveProperty('averageResponseTime');
+        expect(result.aggregateStats).toHaveProperty('totalCalls');
+        expect(result.aggregateStats).toHaveProperty('slowestMethod');
+      }
+    });
+
+    it.skipIf(!shouldRun)('should return aggregate stats for publications', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'publications',
+        limit: 10,
+      });
+
+      if (result.itemsAnalyzed > 0) {
+        expect(result).toHaveProperty('aggregateStats');
+        expect(result.aggregateStats).toHaveProperty('averageResponseTime');
+        expect(result.aggregateStats).toHaveProperty('totalSubscriptions');
+        expect(result.aggregateStats).toHaveProperty('slowestPublication');
+      }
+    });
+
+    it.skipIf(!shouldRun)('should return aggregate stats for system', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'system',
+      });
+
+      if (result.itemsAnalyzed > 0) {
+        expect(result).toHaveProperty('aggregateStats');
+        expect(result.aggregateStats).toHaveProperty('averageCpu');
+        expect(result.aggregateStats).toHaveProperty('peakCpu');
+        expect(result.aggregateStats).toHaveProperty('averageMemory');
+        expect(result.aggregateStats).toHaveProperty('peakMemory');
+        expect(result.aggregateStats).toHaveProperty('averageSessions');
+      }
+    });
+
+    it.skipIf(!shouldRun)('should accept custom time range', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+        startTime: oneHourAgo,
+        endTime: now,
+      });
+
+      expect(result).toHaveProperty('category', 'methods');
+      expect(result).toHaveProperty('itemsAnalyzed');
+    });
+
+    it.skipIf(!shouldRun)('should respect limit parameter', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+        limit: 5,
+      });
+
+      expect(result).toHaveProperty('itemsAnalyzed');
+      expect(result.itemsAnalyzed).toBeLessThanOrEqual(5);
+    });
+
+    it.skipIf(!shouldRun)('should include documentation URLs in recommendations', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+        limit: 20,
+      });
+
+      // If we have recommendations, they should have documentation URLs
+      for (const rec of result.recommendations) {
+        expect(rec).toHaveProperty('documentationUrl');
+        expect(typeof rec.documentationUrl).toBe('string');
+      }
+    });
+
+    it.skipIf(!shouldRun)('should include severity in issues', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+        limit: 20,
+      });
+
+      // If we have issues, they should have severity
+      for (const issue of result.issues) {
+        expect(issue).toHaveProperty('severity');
+        expect(['critical', 'high', 'medium', 'low', 'info']).toContain(issue.severity);
+      }
+    });
+
+    it.skipIf(!shouldRun)('should handle extended time range (1 week) for methods', async () => {
+      const result = await getOptimizationAdvice(graphqlClient, {
+        category: 'methods',
+        startTime: oneWeekAgo,
+        endTime: now,
+        limit: 10,
+      });
+
+      expect(result).toHaveProperty('category', 'methods');
+      expect(result).toHaveProperty('itemsAnalyzed');
     });
   });
 

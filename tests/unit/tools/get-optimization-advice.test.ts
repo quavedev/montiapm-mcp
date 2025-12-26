@@ -14,17 +14,25 @@ describe('getOptimizationAdvice', () => {
     it('should return advice for slow methods', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorMethodBreakdown: [
+          meteorMethodTraces: [
             {
-              name: 'slow.method',
-              count: 100,
-              responseTime: 800,
-              waitTime: 100,
-              dbTime: 400,
-              httpTime: 0,
-              emailTime: 0,
-              asyncTime: 100,
-              computeTime: 200,
+              id: 'trace1',
+              method: 'slow.method',
+              host: 'host1',
+              time: Date.now(),
+              type: 'method',
+              totalValue: 800,
+              errored: false,
+              metrics: {
+                total: 800,
+                wait: 100,
+                db: 400,
+                compute: 200,
+                http: 0,
+                email: 0,
+                async: 100,
+                fs: 0,
+              },
             },
           ],
         },
@@ -42,17 +50,25 @@ describe('getOptimizationAdvice', () => {
     it('should include documentation links in recommendations', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorMethodBreakdown: [
+          meteorMethodTraces: [
             {
-              name: 'db.heavy',
-              count: 50,
-              responseTime: 1000,
-              waitTime: 0,
-              dbTime: 800,
-              httpTime: 0,
-              emailTime: 0,
-              asyncTime: 0,
-              computeTime: 200,
+              id: 'trace1',
+              method: 'db.heavy',
+              host: 'host1',
+              time: Date.now(),
+              type: 'method',
+              totalValue: 1000,
+              errored: false,
+              metrics: {
+                total: 1000,
+                wait: 0,
+                db: 800,
+                compute: 200,
+                http: 0,
+                email: 0,
+                async: 0,
+                fs: 0,
+              },
             },
           ],
         },
@@ -68,7 +84,7 @@ describe('getOptimizationAdvice', () => {
     it('should handle empty method data', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorMethodBreakdown: [],
+          meteorMethodTraces: [],
         },
       });
 
@@ -83,17 +99,25 @@ describe('getOptimizationAdvice', () => {
     it('should identify issues by severity', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorMethodBreakdown: [
+          meteorMethodTraces: [
             {
-              name: 'critical.method',
-              count: 100,
-              responseTime: 1500,
-              waitTime: 100,
-              dbTime: 1000,
-              httpTime: 0,
-              emailTime: 0,
-              asyncTime: 0,
-              computeTime: 400,
+              id: 'trace1',
+              method: 'critical.method',
+              host: 'host1',
+              time: Date.now(),
+              type: 'method',
+              totalValue: 1500,
+              errored: false,
+              metrics: {
+                total: 1500,
+                wait: 100,
+                db: 1000,
+                compute: 400,
+                http: 0,
+                email: 0,
+                async: 0,
+                fs: 0,
+              },
             },
           ],
         },
@@ -112,20 +136,25 @@ describe('getOptimizationAdvice', () => {
     it('should return advice for slow publications', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorPubBreakdown: [
+          meteorPubTraces: [
             {
-              name: 'slow.publication',
-              count: 200,
-              responseTime: 600,
-              lifeTime: 300000,
-              activeSubs: 50,
-              activeDocs: 100,
-              observerReuse: 0.5,
-              polledDocuments: 0,
-              liveAddedDocuments: 100,
-              liveChangedDocuments: 50,
-              liveRemovedDocuments: 10,
-              initiallyAddedDocuments: 100,
+              id: 'trace1',
+              publication: 'slow.publication',
+              host: 'host1',
+              time: Date.now(),
+              type: 'sub',
+              totalValue: 1500, // High response time to trigger issues
+              errored: false,
+              metrics: {
+                total: 1500,
+                wait: 0,
+                db: 1000,
+                compute: 500,
+                http: 0,
+                email: 0,
+                async: 0,
+                fs: 0,
+              },
             },
           ],
         },
@@ -136,26 +165,32 @@ describe('getOptimizationAdvice', () => {
       });
 
       expect(result.category).toBe('publications');
-      expect(result.recommendations.length).toBeGreaterThan(0);
+      // Should have issues for slow publications
+      expect(result.issues.length).toBeGreaterThan(0);
     });
 
-    it('should include redis-oplog recommendations for low observer reuse', async () => {
+    it('should identify high DB time in publications', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorPubBreakdown: [
+          meteorPubTraces: [
             {
-              name: 'low.observer.reuse',
-              count: 100,
-              responseTime: 300,
-              lifeTime: 60000,
-              activeSubs: 200,
-              activeDocs: 500,
-              observerReuse: 0.3,
-              polledDocuments: 0,
-              liveAddedDocuments: 500,
-              liveChangedDocuments: 100,
-              liveRemovedDocuments: 20,
-              initiallyAddedDocuments: 500,
+              id: 'trace1',
+              publication: 'db.heavy.pub',
+              host: 'host1',
+              time: Date.now(),
+              type: 'sub',
+              totalValue: 800,
+              errored: false,
+              metrics: {
+                total: 800,
+                wait: 0,
+                db: 600, // High DB time
+                compute: 200,
+                http: 0,
+                email: 0,
+                async: 0,
+                fs: 0,
+              },
             },
           ],
         },
@@ -165,19 +200,15 @@ describe('getOptimizationAdvice', () => {
         category: 'publications',
       });
 
-      const hasRedisOplog = result.recommendations.some(
-        (r) =>
-          r.title.toLowerCase().includes('namespace') ||
-          r.title.toLowerCase().includes('channel') ||
-          r.title.toLowerCase().includes('redis'),
-      );
-      expect(hasRedisOplog).toBe(true);
+      // Should have issues for high DB time
+      const hasDbIssue = result.issues.some((i) => i.issue.toLowerCase().includes('db'));
+      expect(hasDbIssue).toBe(true);
     });
 
     it('should handle empty publication data', async () => {
       mockQuery.mockResolvedValueOnce({
         data: {
-          meteorPubBreakdown: [],
+          meteorPubTraces: [],
         },
       });
 
@@ -191,12 +222,22 @@ describe('getOptimizationAdvice', () => {
 
   describe('system category', () => {
     it('should return advice for high resource usage', async () => {
+      // System category makes 3 separate calls for CPU, RAM, SESSIONS
+      mockQuery.mockResolvedValueOnce({
+        data: {
+          meteorSystemMetrics: [{ host: null, points: [], p50: 85, p95: 90, p99: 95, max: 100 }],
+        },
+      });
       mockQuery.mockResolvedValueOnce({
         data: {
           meteorSystemMetrics: [
-            { time: Date.now(), cpuUsage: 85, memory: 1.8e9, sessions: 500, eventLoopTime: 50 },
-            { time: Date.now() - 60000, cpuUsage: 90, memory: 1.9e9, sessions: 520, eventLoopTime: 55 },
+            { host: null, points: [], p50: 1.8e9, p95: 1.9e9, p99: 2e9, max: 2.1e9 },
           ],
+        },
+      });
+      mockQuery.mockResolvedValueOnce({
+        data: {
+          meteorSystemMetrics: [{ host: null, points: [], p50: 500, p95: 520, p99: 550, max: 600 }],
         },
       });
 
@@ -205,10 +246,22 @@ describe('getOptimizationAdvice', () => {
       });
 
       expect(result.category).toBe('system');
-      // System category should have either recommendations or insights about the data
+      // High CPU (85%) and high memory (1.8GB) should generate issues
+      expect(result.issues.length).toBeGreaterThan(0);
     });
 
     it('should handle empty system metrics', async () => {
+      // System category makes 3 separate calls for CPU, RAM, SESSIONS
+      mockQuery.mockResolvedValueOnce({
+        data: {
+          meteorSystemMetrics: [],
+        },
+      });
+      mockQuery.mockResolvedValueOnce({
+        data: {
+          meteorSystemMetrics: [],
+        },
+      });
       mockQuery.mockResolvedValueOnce({
         data: {
           meteorSystemMetrics: [],
@@ -220,13 +273,14 @@ describe('getOptimizationAdvice', () => {
       });
 
       expect(result.category).toBe('system');
+      expect(result.itemsAnalyzed).toBe(0);
     });
   });
 
   it('should include category in result', async () => {
     mockQuery.mockResolvedValueOnce({
       data: {
-        meteorMethodBreakdown: [],
+        meteorMethodTraces: [],
       },
     });
 
@@ -240,17 +294,25 @@ describe('getOptimizationAdvice', () => {
   it('should include summary in result', async () => {
     mockQuery.mockResolvedValueOnce({
       data: {
-        meteorMethodBreakdown: [
+        meteorMethodTraces: [
           {
-            name: 'test.method',
-            count: 10,
-            responseTime: 500,
-            waitTime: 0,
-            dbTime: 300,
-            httpTime: 0,
-            emailTime: 0,
-            asyncTime: 0,
-            computeTime: 200,
+            id: 'trace1',
+            method: 'test.method',
+            host: 'host1',
+            time: Date.now(),
+            type: 'method',
+            totalValue: 500,
+            errored: false,
+            metrics: {
+              total: 500,
+              wait: 0,
+              db: 300,
+              compute: 200,
+              http: 0,
+              email: 0,
+              async: 0,
+              fs: 0,
+            },
           },
         ],
       },
