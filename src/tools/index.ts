@@ -53,3 +53,18 @@ export {
   getHttpTracesSchema,
   type GetHttpTracesInput,
 } from './http-traces.js';
+
+export {
+  getOptimizationAdvice,
+  getOptimizationAdviceSchema,
+  type GetOptimizationAdviceInput,
+} from './get-optimization-advice.js';
+
+export {
+  explainMetric,
+  explainMetricSchema,
+  listMetrics,
+  listMetricsSchema,
+  type ExplainMetricInput,
+  type ListMetricsInput,
+} from './explain-metric.js';

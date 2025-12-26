@@ -20,6 +20,10 @@ import {
   getHealthSummarySchema,
   getHttpTraces,
   getHttpTracesSchema,
+  getOptimizationAdvice,
+  getOptimizationAdviceSchema,
+  explainMetric,
+  explainMetricSchema,
 } from './tools/index.js';
 
 export interface MontiMcpServerOptions {
@@ -194,6 +198,40 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     async (params) => {
       const input = getHttpTracesSchema.parse(params);
       const result = await getHttpTraces(graphqlClient, input);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'get_optimization_advice',
+    {
+      title: 'Get Optimization Advice',
+      description:
+        'Get contextual optimization advice based on live Monti APM data. Analyzes methods, publications, or system metrics and provides documentation-backed recommendations including Redis-Oplog namespace patterns for improved reactivity. Categories: methods, publications, system.',
+      inputSchema: getOptimizationAdviceSchema.shape,
+    },
+    async (params) => {
+      const input = getOptimizationAdviceSchema.parse(params);
+      const result = await getOptimizationAdvice(graphqlClient, input);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'explain_metric',
+    {
+      title: 'Explain Metric',
+      description:
+        'Get detailed explanation of a Monti APM metric including definition, formula, interpretation, and optimization tips. Available metrics include: responseTime, observerReuse, waitTime, dbTime, throughput, subRate, and more.',
+      inputSchema: explainMetricSchema.shape,
+    },
+    async (params) => {
+      const input = explainMetricSchema.parse(params);
+      const result = await explainMetric(input);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };

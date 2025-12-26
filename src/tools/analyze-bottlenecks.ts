@@ -3,6 +3,8 @@ import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
 import { formatResponseTime, formatBytes, formatPercentage } from '../utils/formatting.js';
+import { advisor } from '../knowledge/advisor.js';
+import { REDIS_OPLOG_RECOMMENDATIONS } from '../knowledge/recommendations/index.js';
 
 export const analyzeBottlenecksSchema = z.object({
   startTime: z.number().optional().describe('Unix timestamp in milliseconds. Default: 1 hour ago'),
@@ -103,7 +105,16 @@ interface BottleneckIssue {
   severity: 'high' | 'medium' | 'low';
   description: string;
   recommendation: string;
+  documentationUrl?: string;
   details: Record<string, string | number>;
+}
+
+interface DocumentedRecommendation {
+  title: string;
+  description: string;
+  actions?: string[];
+  codeExample?: string;
+  documentationUrl: string;
 }
 
 export async function analyzeBottlenecks(
@@ -149,15 +160,22 @@ export async function analyzeBottlenecks(
     // Pub breakdown may not be available
   }
 
-  // Analyze methods
+  // Analyze methods using the knowledge base advisor
   for (const method of methodBreakdown) {
     if (method.sortedValue > 1000) {
+      const analysis = advisor.analyzeMethodMetrics({
+        total: method.sortedValue,
+      });
+
+      const topRec = analysis.recommendations[0];
       issues.push({
         category: 'Slow Methods',
         severity: method.sortedValue > 5000 ? 'high' : 'medium',
         description: `Method "${method.name}" has high response time`,
-        recommendation:
-          'Investigate this method for database queries, external HTTP calls, or heavy computation',
+        recommendation: topRec
+          ? `${topRec.title}: ${topRec.description}`
+          : 'Investigate this method for database queries, external HTTP calls, or heavy computation',
+        documentationUrl: topRec?.docUrl ?? 'https://docs.montiapm.com/academy/make-your-app-faster',
         details: {
           method: method.name,
           avgResponseTime: formatResponseTime(method.sortedValue),
@@ -172,7 +190,8 @@ export async function analyzeBottlenecks(
         severity: 'medium',
         description: `Method "${method.name}" has high throughput with moderate response time`,
         recommendation:
-          'Consider caching or optimizing this method to reduce server load',
+          'Consider caching or rate limiting this method to reduce server load',
+        documentationUrl: 'https://guide.meteor.com/performance-improvement',
         details: {
           method: method.name,
           avgResponseTime: formatResponseTime(method.sortedValue),
@@ -182,15 +201,22 @@ export async function analyzeBottlenecks(
     }
   }
 
-  // Analyze publications
+  // Analyze publications with redis-oplog recommendations
   for (const pub of pubBreakdown) {
     if (pub.sortedValue > 500) {
+      const pubAnalysis = advisor.analyzePublicationMetrics({
+        responseTime: pub.sortedValue,
+      });
+
+      const topRec = pubAnalysis.recommendations[0];
       issues.push({
         category: 'Slow Publications',
         severity: pub.sortedValue > 2000 ? 'high' : 'medium',
         description: `Publication "${pub.name}" has high initial load time`,
-        recommendation:
-          'Optimize publication queries, add indexes, or reduce initial data sent',
+        recommendation: topRec
+          ? `${topRec.title}: ${topRec.description}`
+          : 'Optimize publication queries, add indexes, or reduce initial data sent',
+        documentationUrl: topRec?.docUrl ?? 'https://docs.montiapm.com/academy/reducing-pubsub-data-usage',
         details: {
           publication: pub.name,
           avgResponseTime: formatResponseTime(pub.sortedValue),
@@ -237,7 +263,8 @@ export async function analyzeBottlenecks(
             severity: ramMetrics.max > 2 * 1024 * 1024 * 1024 ? 'high' : 'medium',
             description: 'High memory usage detected',
             recommendation:
-              'Check for memory leaks, optimize observer usage, or increase server capacity',
+              'Check for memory leaks, optimize observer usage, improve observer reuse with redis-oplog namespaces, or increase server capacity',
+            documentationUrl: 'https://docs.montiapm.com/academy/optimize-memory-usage',
             details: {
               maxMemory: formatBytes(ramMetrics.max),
               p95Memory: formatBytes(ramMetrics.p95),
@@ -262,7 +289,8 @@ export async function analyzeBottlenecks(
             severity: cpuMetrics.p95 > 95 ? 'high' : 'medium',
             description: 'High CPU usage detected',
             recommendation:
-              'Profile the app for CPU-intensive operations, consider load balancing',
+              'Record a CPU profile to identify hot paths, consider horizontal scaling or moving heavy tasks to workers',
+            documentationUrl: 'https://docs.montiapm.com/record-cpu-profile',
             details: {
               p95CPU: formatPercentage(cpuMetrics.p95),
               maxCPU: formatPercentage(cpuMetrics.max),
@@ -279,6 +307,16 @@ export async function analyzeBottlenecks(
   const severityOrder = { high: 0, medium: 1, low: 2 };
   issues.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
+  // Always include top redis-oplog recommendations for reactivity optimization
+  const redisOplogRecommendations: DocumentedRecommendation[] =
+    REDIS_OPLOG_RECOMMENDATIONS.slice(0, 3).map((rec) => ({
+      title: rec.title,
+      description: rec.description,
+      actions: rec.actions,
+      codeExample: rec.codeExample,
+      documentationUrl: rec.docUrl,
+    }));
+
   return {
     timeRange: {
       start: new Date(startTime).toISOString(),
@@ -287,6 +325,7 @@ export async function analyzeBottlenecks(
     issuesFound: issues.length,
     issues,
     systemMetrics: input.includeSystemMetrics !== false ? systemAnalysis : undefined,
+    redisOplogRecommendations,
     summary:
       issues.length === 0
         ? 'No significant performance bottlenecks detected'

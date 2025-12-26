@@ -54,6 +54,31 @@ You can now ask Claude to analyze your Meteor app's performance:
 "Show me error trends from the last hour"
 ```
 
+## Claude Code Subagent
+
+Generate a specialized Claude Code subagent for Meteor performance analysis:
+
+```bash
+npx @quave/montiapm-mcp --generate-agent
+```
+
+This creates `.claude/agents/meteor-performance.md` with:
+- Expert knowledge of Meteor performance optimization
+- Pre-configured access to all Monti APM MCP tools
+- Documentation-backed thresholds and recommendations
+- Code examples for common optimization patterns
+
+**Options:**
+- `--output <path>` - Custom output path (default: `.claude/agents/meteor-performance.md`)
+- `--stdout` - Print to stdout instead of file
+- `--force` - Overwrite existing file
+
+After running, Claude Code will automatically use this subagent when:
+- Analyzing performance issues
+- Investigating slow methods and publications
+- Reviewing code changes for performance implications
+- Getting optimization recommendations
+
 ## How to Use
 
 ### Diagnosing Slow Performance

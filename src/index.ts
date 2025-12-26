@@ -2,8 +2,17 @@
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createMontiMcpServer } from './server.js';
+import { handleGenerateAgent } from './agent/generate.js';
 
 async function main() {
+  const args = process.argv.slice(2);
+
+  // Handle --generate-agent flag
+  if (args.includes('--generate-agent')) {
+    await handleGenerateAgent(args);
+    return;
+  }
+
   const appId = process.env.MONTI_APP_ID;
   const appSecret = process.env.MONTI_APP_SECRET;
 

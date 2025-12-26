@@ -77,8 +77,9 @@ describe('analyzeSlowMethods', () => {
     const result = await analyzeSlowMethods(mockClient, {});
 
     expect(result.analysis[0].mainBottleneck).toContain('db');
-    expect(result.analysis[0].recommendations.some((r: string) =>
-      r.toLowerCase().includes('database') || r.toLowerCase().includes('index')
+    // Recommendations are now objects with title, description, and documentationUrl
+    expect(result.analysis[0].recommendations.some((r: { title: string; description: string }) =>
+      r.title.toLowerCase().includes('index') || r.description.toLowerCase().includes('database')
     )).toBe(true);
   });
 
@@ -178,8 +179,8 @@ describe('analyzeSlowMethods', () => {
 
     const result = await analyzeSlowMethods(mockClient, {});
 
-    expect(result.analysis[0].recommendations.some((r: string) =>
-      r.toLowerCase().includes('http')
+    expect(result.analysis[0].recommendations.some((r: { title: string; description: string }) =>
+      r.title.toLowerCase().includes('http') || r.description.toLowerCase().includes('http')
     )).toBe(true);
   });
 
@@ -202,8 +203,8 @@ describe('analyzeSlowMethods', () => {
 
     const result = await analyzeSlowMethods(mockClient, {});
 
-    expect(result.analysis[0].recommendations.some((r: string) =>
-      r.toLowerCase().includes('async') || r.toLowerCase().includes('promises')
+    expect(result.analysis[0].recommendations.some((r: { title: string; description: string }) =>
+      r.title.toLowerCase().includes('async') || r.description.toLowerCase().includes('async') || r.description.toLowerCase().includes('promises')
     )).toBe(true);
   });
 
@@ -226,8 +227,9 @@ describe('analyzeSlowMethods', () => {
 
     const result = await analyzeSlowMethods(mockClient, {});
 
-    expect(result.analysis[0].recommendations.some((r: string) =>
-      r.toLowerCase().includes('balanced') || r.toLowerCase().includes('monitor')
+    // With balanced metrics (no single bottleneck), advisor returns general recommendations like rate limiting or caching
+    expect(result.analysis[0].recommendations.some((r: { title: string; description: string }) =>
+      r.title.toLowerCase().includes('rate limit') || r.title.toLowerCase().includes('cache')
     )).toBe(true);
   });
 
@@ -250,8 +252,8 @@ describe('analyzeSlowMethods', () => {
 
     const result = await analyzeSlowMethods(mockClient, {});
 
-    expect(result.analysis[0].recommendations.some((r: string) =>
-      r.toLowerCase().includes('wait') || r.toLowerCase().includes('unblock') || r.toLowerCase().includes('queuing')
+    expect(result.analysis[0].recommendations.some((r: { title: string; description: string }) =>
+      r.title.toLowerCase().includes('wait') || r.title.toLowerCase().includes('unblock') || r.description.toLowerCase().includes('unblock') || r.description.toLowerCase().includes('queuing')
     )).toBe(true);
   });
 });

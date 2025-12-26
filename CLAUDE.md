@@ -20,6 +20,9 @@ npm run test:integration # Run integration tests (requires credentials)
 npm run codegen        # Generate GraphQL types
 npm run codegen:watch  # Watch mode for codegen
 npm run typecheck      # Type check without emitting
+
+# Generate Claude Code subagent for performance analysis
+npx @quave/montiapm-mcp --generate-agent
 ```
 
 ## Environment Variables
@@ -33,11 +36,19 @@ npm run typecheck      # Type check without emitting
 ### Directory Structure
 ```
 src/
+├── agent/          # Claude Code subagent generator
+│   ├── template.ts # Subagent markdown template generator
+│   └── generate.ts # --generate-agent flag handler
 ├── auth/           # Authentication with Monti APM API
 ├── graphql/        # Apollo Client and GraphQL operations
 │   ├── client.ts   # Apollo Client setup
 │   ├── operations/ # .graphql operation documents
 │   └── generated/  # AUTO-GENERATED, DO NOT EDIT
+├── knowledge/      # Performance knowledge base
+│   ├── thresholds.ts    # Metric threshold definitions
+│   ├── glossary.ts      # Metric definitions and explanations
+│   ├── advisor.ts       # Optimization advisor logic
+│   └── recommendations/ # Optimization recommendations by category
 ├── tools/          # MCP tool implementations
 └── utils/          # Shared utilities
 ```
@@ -72,6 +83,8 @@ Requires valid `MONTI_APP_ID` and `MONTI_APP_SECRET` environment variables.
 | `analyze_slow_methods` | Analyze and summarize slow method patterns |
 | `analyze_performance_bottlenecks` | Identify performance bottlenecks |
 | `get_health_summary` | Get overall application health summary |
+| `get_optimization_advice` | Get optimization recommendations by category |
+| `explain_metric` | Explain what a metric means with optimization tips |
 
 ## API Reference
 

@@ -3,6 +3,7 @@ import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
 import { formatResponseTime, formatBytes, formatPercentage } from '../utils/formatting.js';
+import { REDIS_OPLOG_RECOMMENDATIONS } from '../knowledge/recommendations/index.js';
 
 export const getHealthSummarySchema = z.object({
   startTime: z.number().optional().describe('Unix timestamp in milliseconds. Default: 1 hour ago'),
@@ -290,7 +291,70 @@ export async function getHealthSummary(
         : null,
     },
     insights: generateInsights(methodSummary, errorCount, cpuMetrics, ramMetrics),
+    recommendations: generateRecommendations(methodSummary, errorCount, cpuMetrics, ramMetrics),
+    documentationLinks: {
+      performance: 'https://docs.montiapm.com/academy/make-your-app-faster',
+      memory: 'https://docs.montiapm.com/academy/optimize-memory-usage',
+      observers: 'https://docs.montiapm.com/academy/improving-cpu-network-usage',
+      redisOplog: 'https://github.com/cult-of-coders/redis-oplog/blob/master/docs/finetuning.md',
+    },
   };
+}
+
+interface Recommendation {
+  title: string;
+  description: string;
+  documentationUrl: string;
+}
+
+function generateRecommendations(
+  methodSummary: {
+    avgResponseTime: number;
+    totalMethods: number;
+    slowestMethod: string;
+    slowestMethodTime: number;
+  },
+  _errorCount: number,
+  cpuMetrics: SystemMetric | null,
+  ramMetrics: SystemMetric | null,
+): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+
+  if (methodSummary.avgResponseTime > 500) {
+    recommendations.push({
+      title: 'Optimize slow methods',
+      description: 'Use the analyze_slow_methods tool to identify bottlenecks in your methods',
+      documentationUrl: 'https://docs.montiapm.com/academy/make-your-app-faster',
+    });
+  }
+
+  if (ramMetrics && ramMetrics.p95 > 1.5 * 1024 * 1024 * 1024) {
+    recommendations.push({
+      title: 'Improve observer reuse',
+      description: 'High memory usage can be reduced by improving observer reuse with redis-oplog namespaces',
+      documentationUrl: 'https://docs.montiapm.com/academy/optimize-memory-usage',
+    });
+  }
+
+  if (cpuMetrics && cpuMetrics.p95 > 80) {
+    recommendations.push({
+      title: 'Record CPU profile',
+      description: 'Identify CPU-intensive operations by recording and analyzing a CPU profile',
+      documentationUrl: 'https://docs.montiapm.com/record-cpu-profile',
+    });
+  }
+
+  // Always include top redis-oplog recommendation
+  const topRedisOplog = REDIS_OPLOG_RECOMMENDATIONS[0];
+  if (topRedisOplog) {
+    recommendations.push({
+      title: topRedisOplog.title,
+      description: topRedisOplog.description,
+      documentationUrl: topRedisOplog.docUrl,
+    });
+  }
+
+  return recommendations;
 }
 
 function generateInsights(

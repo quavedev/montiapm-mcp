@@ -4,6 +4,7 @@ import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
 import { formatResponseTime, formatMetricsBreakdown } from '../utils/formatting.js';
 import { SortOrder } from '../utils/constants.js';
+import { advisor } from '../knowledge/advisor.js';
 
 export const analyzeSlowMethodsSchema = z.object({
   threshold: z.number().optional().default(500).describe('Response time threshold in milliseconds. Default: 500ms'),
@@ -84,7 +85,15 @@ interface MethodAnalysis {
     http: number;
     async: number;
   };
-  recommendations: string[];
+  recommendations: FormattedRecommendation[];
+}
+
+interface FormattedRecommendation {
+  title: string;
+  description: string;
+  actions?: string[];
+  codeExample?: string;
+  documentationUrl: string;
 }
 
 function identifyBottleneck(metrics: MethodTrace['metrics']): string {
@@ -114,51 +123,36 @@ function getRecommendations(
   _method: string,
   avgMetrics: MethodAnalysis['avgMetrics'],
   avgTotal: number,
-): string[] {
-  const recommendations: string[] = [];
+): FormattedRecommendation[] {
+  // Use the knowledge base advisor for documentation-backed recommendations
+  const analysis = advisor.analyzeMethodMetrics({
+    total: avgTotal,
+    db: avgMetrics.db,
+    compute: avgMetrics.compute,
+    http: avgMetrics.http,
+    wait: avgMetrics.wait,
+    async: avgMetrics.async,
+  });
 
-  // DB recommendations
-  if (avgMetrics.db > avgTotal * 0.5) {
-    recommendations.push(
-      'Database operations dominate this method. Consider adding indexes, optimizing queries, or reducing document fetches.',
-    );
+  if (analysis.recommendations.length === 0) {
+    return [
+      {
+        title: 'Performance is balanced',
+        description:
+          'Method performance is balanced. Monitor for spikes and consider overall throughput optimization.',
+        documentationUrl: 'https://docs.montiapm.com/academy/make-your-app-faster',
+      },
+    ];
   }
 
-  // Wait time recommendations
-  if (avgMetrics.wait > avgTotal * 0.3) {
-    recommendations.push(
-      'High wait time indicates queuing. Consider using this.unblock() for non-blocking operations or distributing load.',
-    );
-  }
-
-  // Compute recommendations
-  if (avgMetrics.compute > avgTotal * 0.4) {
-    recommendations.push(
-      'Significant CPU time spent. Consider optimizing algorithms, caching computed results, or moving to a worker.',
-    );
-  }
-
-  // HTTP recommendations
-  if (avgMetrics.http > avgTotal * 0.3) {
-    recommendations.push(
-      'External HTTP calls are slow. Consider caching responses, using parallel requests, or optimizing external services.',
-    );
-  }
-
-  // Async recommendations
-  if (avgMetrics.async > avgTotal * 0.3) {
-    recommendations.push(
-      'Async operations are significant. Ensure promises are properly parallelized and not awaited sequentially.',
-    );
-  }
-
-  if (recommendations.length === 0) {
-    recommendations.push(
-      'Method performance is balanced. Monitor for spikes and consider overall throughput optimization.',
-    );
-  }
-
-  return recommendations;
+  // Format recommendations with documentation links
+  return analysis.recommendations.slice(0, 5).map((rec) => ({
+    title: rec.title,
+    description: rec.description,
+    actions: rec.actions,
+    codeExample: rec.codeExample,
+    documentationUrl: rec.docUrl,
+  }));
 }
 
 export async function analyzeSlowMethods(
