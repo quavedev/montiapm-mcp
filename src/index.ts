@@ -35,7 +35,9 @@ async function main() {
     process.exit(1);
   }
 
-  const server = createMontiMcpServer({ appId, appSecret });
+  const region = process.env.MONTI_REGION;
+
+  const server = createMontiMcpServer({ appId, appSecret, region });
   const transport = new StdioServerTransport();
 
   await server.connect(transport);
