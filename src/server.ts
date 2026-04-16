@@ -24,6 +24,10 @@ import {
   getOptimizationAdviceSchema,
   explainMetric,
   explainMetricSchema,
+  getErrorTraces,
+  getErrorTracesSchema,
+  getErrorTraceDetail,
+  getErrorTraceDetailSchema,
 } from './tools/index.js';
 
 export interface MontiMcpServerOptions {
@@ -232,6 +236,40 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     async (params) => {
       const input = explainMetricSchema.parse(params);
       const result = await explainMetric(input);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'get_error_traces',
+    {
+      title: 'Get Error Traces',
+      description:
+        'Retrieve error occurrence traces with details including error message, type, stack traces, and host. Supports filtering by error type (METHOD, SUBSCRIPTION, CLIENT), status (NEW, IGNORED, FIXED), and exact error message. IMPORTANT: Default time range is last 1 hour. If no data is returned, try a wider startTime.',
+      inputSchema: getErrorTracesSchema.shape,
+    },
+    async (params) => {
+      const input = getErrorTracesSchema.parse(params);
+      const result = await getErrorTraces(graphqlClient, input);
+      return {
+        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+      };
+    },
+  );
+
+  server.registerTool(
+    'get_error_trace_detail',
+    {
+      title: 'Get Error Trace Detail',
+      description:
+        'Get full details of a specific error trace including stack traces and client environment info (browser, userId, IP, URL). Use an error trace ID obtained from get_error_traces.',
+      inputSchema: getErrorTraceDetailSchema.shape,
+    },
+    async (params) => {
+      const input = getErrorTraceDetailSchema.parse(params);
+      const result = await getErrorTraceDetail(graphqlClient, input);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };
