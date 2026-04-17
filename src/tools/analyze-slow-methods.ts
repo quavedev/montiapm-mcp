@@ -176,6 +176,7 @@ export async function analyzeSlowMethods(
     return {
       message: `No methods found with response time >= ${input.threshold}ms in the specified time range`,
       threshold: formatResponseTime(input.threshold ?? 500),
+      tracesAnalyzed: 0,
       methodsAnalyzed: 0,
       analysis: [],
     };
