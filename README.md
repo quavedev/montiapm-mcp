@@ -164,6 +164,8 @@ Get actionable advice:
 | `get_trace_detail` | Get detailed events timeline for a specific trace |
 | `get_subscription_traces` | Retrieve publication/subscription traces |
 | `get_http_traces` | Retrieve HTTP request traces with performance metrics |
+| `get_error_traces` | Retrieve error occurrence traces with filtering by type, status, and message |
+| `get_error_trace_detail` | Get full details of a specific error including stack traces and client info |
 
 ### Metrics
 
@@ -267,6 +269,9 @@ For time-series data:
 git clone https://github.com/quavedev/montiapm-mcp.git
 cd montiapm-mcp
 npm install
+
+# Generate GraphQL types (required before building or running tests)
+MONTI_APP_ID=xxx MONTI_APP_SECRET=xxx npm run codegen
 ```
 
 ### Commands

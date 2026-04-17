@@ -68,3 +68,15 @@ export {
   type ExplainMetricInput,
   type ListMetricsInput,
 } from './explain-metric.js';
+
+export {
+  getErrorTraces,
+  getErrorTracesSchema,
+  type GetErrorTracesInput,
+} from './error-traces.js';
+
+export {
+  getErrorTraceDetail,
+  getErrorTraceDetailSchema,
+  type GetErrorTraceDetailInput,
+} from './error-trace-detail.js';

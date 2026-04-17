@@ -20,6 +20,8 @@ describe('createMontiMcpServer', () => {
             meteorErrorMetrics: [],
             meteorMethodBreakdown: [],
             meteorPubBreakdown: [],
+            meteorErrorTraces: [],
+            meteorErrorTrace: null,
           },
         });
       }),

@@ -79,6 +79,8 @@ Requires valid `MONTI_APP_ID` and `MONTI_APP_SECRET` environment variables.
 | `get_http_traces` | Retrieve HTTP request traces |
 | `get_observer_traces` | Retrieve observer traces |
 | `get_system_metrics` | Retrieve system metrics (RAM, CPU, Sessions) |
+| `get_error_traces` | Retrieve error occurrence traces with filtering |
+| `get_error_trace_detail` | Get full details of a specific error trace |
 | `get_error_metrics` | Retrieve error count metrics |
 | `analyze_slow_methods` | Analyze and summarize slow method patterns |
 | `analyze_performance_bottlenecks` | Identify performance bottlenecks |
