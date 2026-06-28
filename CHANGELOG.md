@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.0
+
+- Added optional `MONTI_REGION` environment variable for regional API endpoint support. When set, the auth and GraphQL endpoints use `api-{region}.montiapm.com` (e.g. `api-us.montiapm.com` for `MONTI_REGION=us`) instead of the default `api.montiapm.com`.
+- Updated `README.md` with the new environment variable documentation.
+
+See [#1](https://github.com/quavedev/montiapm-mcp/pull/1).
+
 ## 1.3.0
 
 - Added `get_error_traces` tool for retrieving error occurrence traces, with filtering by type (`METHOD`, `SUBSCRIPTION`, `CLIENT`), status (`NEW`, `IGNORED`, `FIXED`), exact message, host, and time range. Returns formatted traces plus a summary of unique messages and type counts.

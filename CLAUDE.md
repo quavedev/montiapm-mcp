@@ -133,6 +133,10 @@ Located in `tests/integration/`. Requires real credentials in `.env`.
 MONTI_APP_ID=<id> MONTI_APP_SECRET=<secret> npm run test:integration
 ```
 
+## Git Conventions
+
+- Do not add Claude, AI assistants, or any tool as a co-author on commits. Do not include `Co-Authored-By` trailers referencing Claude/AI or "Generated with" footers in commit messages or PR descriptions.
+
 ## Common Issues
 
 ### "Token expired or invalid"
