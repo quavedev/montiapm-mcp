@@ -33,6 +33,7 @@ import {
 export interface MontiMcpServerOptions {
   appId: string;
   appSecret: string;
+  region?: string;
 }
 
 export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer {
@@ -41,17 +42,24 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     version: '1.0.0',
   });
 
+  // Derive base URL from region
+  const baseUrl = options.region
+    ? `https://api-${options.region}.montiapm.com`
+    : 'https://api.montiapm.com';
+
   // Set up authentication
   const authClient = new AuthClient({
     credentials: {
       appId: options.appId,
       appSecret: options.appSecret,
     },
+    authEndpoint: `${baseUrl}/auth`,
   });
 
   // Create GraphQL client
-  const graphqlClient: MontiGraphQLClient = createGraphQLClient(() =>
-    authClient.getToken(),
+  const graphqlClient: MontiGraphQLClient = createGraphQLClient(
+    () => authClient.getToken(),
+    `${baseUrl}/core`,
   );
 
   // Register tools

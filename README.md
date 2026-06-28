@@ -33,7 +33,8 @@ Add to your `~/.claude/mcp_servers.json`:
       "args": ["@quave/montiapm-mcp"],
       "env": {
         "MONTI_APP_ID": "your-app-id-here",
-        "MONTI_APP_SECRET": "your-app-secret-here"
+        "MONTI_APP_SECRET": "your-app-secret-here",
+        "MONTI_REGION": "us"
       }
     }
   }
@@ -227,6 +228,7 @@ Get actionable advice:
 |----------|----------|-------------|
 | `MONTI_APP_ID` | Yes | Your Monti APM application ID |
 | `MONTI_APP_SECRET` | Yes | Your Monti APM application secret |
+| `MONTI_REGION` | No | Region code (e.g. `us`). When set, endpoints use `api-{region}.montiapm.com` instead of `api.montiapm.com` |
 
 ### Tool Parameters
 
