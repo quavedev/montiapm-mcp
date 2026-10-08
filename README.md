@@ -168,10 +168,23 @@ Get actionable advice:
 | `get_error_traces` | Retrieve error occurrence traces with filtering by type, status, and message |
 | `get_error_trace_detail` | Get full details of a specific error including stack traces and client info |
 
+> Monti stores only sampled traces (and some plans keep none), so trace tools can return nothing while the breakdown tools below still have data. Empty trace results include a `note` that says so.
+
+### Rankings (Breakdowns)
+
+The same aggregated tables as the Monti dashboards. Use them to find what to optimize first.
+
+| Tool | Description |
+|------|-------------|
+| `get_http_breakdown` | Rank HTTP routes by `IMPACT` (total time, default), `RES_TIME`, `DB`, `COMPUTE`, `ASYNC`, `HTTP_TIME`, `THROUGHPUT`, or `_1xx`..`_5xx` |
+| `get_method_breakdown` | Rank methods by `RESPONSE_TIME` (default), `DB_TIME`, `WAIT_TIME`, `COMPUTE_TIME`, `THROUGHPUT`, sizes, and more; rows include `estimatedTotalTime` |
+| `get_pub_breakdown` | Rank publications by `RESPONSE_TIME` (default), `SUB_RATE`, `FETCHED_DOCUMENTS`, `OBSERVER_REUSE_RATIO`, live document counts, sizes, and more |
+
 ### Metrics
 
 | Tool | Description |
 |------|-------------|
+| `get_http_metrics` | Time series of response time, throughput, or status class for one HTTP route (or all routes) |
 | `get_system_metrics` | Get RAM, CPU, sessions, and MongoDB pool metrics |
 | `get_error_metrics` | Get error count metrics and trends over time |
 
@@ -226,9 +239,30 @@ Get actionable advice:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `MONTI_APP_ID` | Yes | Your Monti APM application ID |
-| `MONTI_APP_SECRET` | Yes | Your Monti APM application secret |
+| `MONTI_APP_ID` | Yes, unless `MONTI_APPS` is set | Your Monti APM application ID |
+| `MONTI_APP_SECRET` | Yes, unless `MONTI_APPS` is set | Your Monti APM application secret |
 | `MONTI_REGION` | No | Region code (e.g. `us`). When set, endpoints use `api-{region}.montiapm.com` instead of `api.montiapm.com` |
+| `MONTI_APPS` | No | JSON array to query several Monti apps from one server (see below). Takes precedence over the single-app variables |
+
+### Multiple Apps
+
+A Meteor system often runs as several Monti apps (for example web, API, and jobs servers). Instead of registering the server once per app, list them all in `MONTI_APPS`:
+
+```json
+{
+  "mcpServers": {
+    "montiapm": {
+      "command": "npx",
+      "args": ["@quave/montiapm-mcp"],
+      "env": {
+        "MONTI_APPS": "[{\"name\":\"web\",\"appId\":\"<id>\",\"appSecret\":\"<secret>\"},{\"name\":\"api\",\"appId\":\"<id>\",\"appSecret\":\"<secret>\",\"region\":\"us\"}]"
+      }
+    }
+  }
+}
+```
+
+With two or more apps, every data tool takes a required `app` argument (one of the configured names), each result includes the `app` it came from, and a `list_apps` tool lists the names. With one app, nothing changes.
 
 ### Tool Parameters
 

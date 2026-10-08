@@ -2,6 +2,7 @@
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { createMontiMcpServer } from './server.js';
+import { readServerOptionsFromEnv } from './config.js';
 import { handleGenerateAgent } from './agent/generate.js';
 
 async function main() {
@@ -13,13 +14,13 @@ async function main() {
     return;
   }
 
-  const appId = process.env.MONTI_APP_ID;
-  const appSecret = process.env.MONTI_APP_SECRET;
-
-  if (!appId || !appSecret) {
-    console.error('Error: MONTI_APP_ID and MONTI_APP_SECRET environment variables are required');
+  let server;
+  try {
+    server = createMontiMcpServer(readServerOptionsFromEnv(process.env));
+  } catch (error) {
+    console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
     console.error('');
-    console.error('Set these variables in your MCP client configuration:');
+    console.error('Configure one app with MONTI_APP_ID and MONTI_APP_SECRET, or several apps with MONTI_APPS:');
     console.error('  {');
     console.error('    "mcpServers": {');
     console.error('      "montiapm": {');
@@ -32,12 +33,11 @@ async function main() {
     console.error('      }');
     console.error('    }');
     console.error('  }');
+    console.error('');
+    console.error('  MONTI_APPS=\'[{"name":"api","appId":"<id>","appSecret":"<secret>"},{"name":"jobs","appId":"<id>","appSecret":"<secret>"}]\'');
     process.exit(1);
   }
 
-  const region = process.env.MONTI_REGION;
-
-  const server = createMontiMcpServer({ appId, appSecret, region });
   const transport = new StdioServerTransport();
 
   await server.connect(transport);

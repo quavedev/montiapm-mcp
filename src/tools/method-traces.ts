@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { gql } from '@apollo/client/core';
+import { NO_TRACES_NOTE } from '../utils/constants.js';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
 import { formatResponseTime, formatMetricsBreakdown } from '../utils/formatting.js';
@@ -104,6 +105,7 @@ export async function getMethodTraces(
   return {
     count: traces.length,
     traces,
+    ...(traces.length === 0 && { note: NO_TRACES_NOTE }),
     summary: {
       avgResponseTime: traces.length > 0
         ? formatResponseTime(
