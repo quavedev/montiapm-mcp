@@ -80,3 +80,22 @@ export {
   getErrorTraceDetailSchema,
   type GetErrorTraceDetailInput,
 } from './error-trace-detail.js';
+
+export {
+  getHttpBreakdown,
+  getHttpBreakdownSchema,
+  getMethodBreakdown,
+  getMethodBreakdownSchema,
+  getPubBreakdown,
+  getPubBreakdownSchema,
+  getBreakdownUnit,
+  type GetHttpBreakdownInput,
+  type GetMethodBreakdownInput,
+  type GetPubBreakdownInput,
+} from './breakdown.js';
+
+export {
+  getHttpMetrics,
+  getHttpMetricsSchema,
+  type GetHttpMetricsInput,
+} from './http-metrics.js';

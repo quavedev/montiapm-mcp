@@ -17,7 +17,7 @@ description: >
   to analyze performance implications, or when investigating slow methods, publications,
   or system resource issues. Queries live Monti APM data and provides documentation-backed
   recommendations.
-tools: Read, Grep, Glob, Bash, mcp__montiapm__get_method_traces, mcp__montiapm__get_subscription_traces, mcp__montiapm__get_http_traces, mcp__montiapm__get_system_metrics, mcp__montiapm__get_error_metrics, mcp__montiapm__analyze_slow_methods, mcp__montiapm__analyze_performance_bottlenecks, mcp__montiapm__get_health_summary, mcp__montiapm__get_optimization_advice, mcp__montiapm__explain_metric
+tools: Read, Grep, Glob, Bash, mcp__montiapm__get_method_traces, mcp__montiapm__get_subscription_traces, mcp__montiapm__get_http_traces, mcp__montiapm__get_http_breakdown, mcp__montiapm__get_method_breakdown, mcp__montiapm__get_pub_breakdown, mcp__montiapm__get_http_metrics, mcp__montiapm__get_system_metrics, mcp__montiapm__get_error_metrics, mcp__montiapm__analyze_slow_methods, mcp__montiapm__analyze_performance_bottlenecks, mcp__montiapm__get_health_summary, mcp__montiapm__get_optimization_advice, mcp__montiapm__explain_metric
 model: opus
 ---`;
 }
@@ -244,23 +244,30 @@ Use \`analyze_performance_bottlenecks\` to find:
 - Publication issues (observer reuse, document counts)
 - System resource pressure
 
-### 3. Deep Dive into Slow Operations
+### 3. Rank What Costs the Most
+Use the breakdown tools before traces; they always have data:
+- \`get_http_breakdown\` (sortField IMPACT, then DB/COMPUTE for the top routes)
+- \`get_method_breakdown\` (RESPONSE_TIME or DB_TIME; compare estimatedTotalTime)
+- \`get_pub_breakdown\` (RESPONSE_TIME, FETCHED_DOCUMENTS, OBSERVER_REUSE_RATIO)
+- \`get_http_metrics\` for one route's trend over time
+
+### 4. Deep Dive into Slow Operations
 For methods: \`get_method_traces\` with filtering by name/time
 For publications: \`get_subscription_traces\`
 For HTTP routes: \`get_http_traces\`
 
-### 4. Get Targeted Advice
+### 5. Get Targeted Advice
 Use \`get_optimization_advice\` with category:
 - 'methods' - Method optimization recommendations
 - 'publications' - Publication/subscription advice
 - 'system' - CPU, memory, scaling recommendations
 
-### 5. Explain Metrics
+### 6. Explain Metrics
 When users ask about specific metrics, use \`explain_metric\`:
 - Provides definition, interpretation, and optimization tips
 - Links to relevant documentation
 
-### 6. Correlate with Code
+### 7. Correlate with Code
 After identifying bottlenecks:
 - Use Read/Grep/Glob to find relevant code
 - Look for the patterns described in recommendations
@@ -275,7 +282,11 @@ After identifying bottlenecks:
 | \`analyze_performance_bottlenecks\` | Comprehensive analysis needed |
 | \`get_method_traces\` | Investigating specific method behavior |
 | \`get_subscription_traces\` | Publication/subscription issues |
-| \`get_http_traces\` | HTTP route performance |
+| \`get_http_traces\` | HTTP route performance (sampled traces) |
+| \`get_http_breakdown\` | Ranking REST routes by total time, latency, DB time, or errors |
+| \`get_method_breakdown\` | Ranking methods by latency, DB/wait/compute time, or volume |
+| \`get_pub_breakdown\` | Ranking publications by latency, fetched docs, or observer reuse |
+| \`get_http_metrics\` | Trend of one route's latency, throughput, or status codes |
 | \`get_system_metrics\` | CPU, memory, session monitoring |
 | \`get_error_metrics\` | Error rate investigation |
 | \`get_optimization_advice\` | Getting category-specific recommendations |

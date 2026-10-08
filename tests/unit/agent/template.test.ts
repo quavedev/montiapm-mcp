@@ -146,7 +146,8 @@ describe('generateSubagentTemplate', () => {
     it('should include step-by-step workflow', () => {
       expect(template).toContain('### 1. Get Overall Health');
       expect(template).toContain('### 2. Identify Bottlenecks');
-      expect(template).toContain('### 3. Deep Dive');
+      expect(template).toContain('### 3. Rank What Costs the Most');
+      expect(template).toContain('### 4. Deep Dive');
     });
 
     it('should include MCP tool reference', () => {
