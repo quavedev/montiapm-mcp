@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
-import { formatBytes, formatPercentage } from '../utils/formatting.js';
+import { formatBytes, formatPercentage, mbToBytes } from '../utils/formatting.js';
 
 export const MetricTypeEnum = z.enum([
   'CPU_USAGE',
@@ -32,6 +32,8 @@ export const getSystemMetricsSchema = z.object({
 });
 
 export type GetSystemMetricsInput = z.input<typeof getSystemMetricsSchema>;
+
+const MEMORY_METRICS = new Set(['RAM_USAGE', 'TOTAL_SYSTEM_MEM', 'FREE_SYSTEM_MEM', 'USED_SYSTEM_MEM']);
 
 const GET_SYSTEM_METRICS = gql`
   query GetSystemMetrics(
@@ -77,7 +79,8 @@ function formatMetricValue(metric: string, value: number): string {
     case 'TOTAL_SYSTEM_MEM':
     case 'FREE_SYSTEM_MEM':
     case 'USED_SYSTEM_MEM':
-      return formatBytes(value);
+      // Monti reports memory in MB
+      return formatBytes(mbToBytes(value));
     case 'CPU_USAGE':
       return formatPercentage(value);
     case 'SESSIONS':
@@ -128,6 +131,7 @@ export async function getSystemMetrics(
   return {
     metric: input.metric,
     resolution: input.resolution ?? 'RES_1MIN',
+    ...(MEMORY_METRICS.has(input.metric) ? { rawUnit: 'MB' } : {}),
     hosts: metrics,
     summary: {
       totalDataPoints: metrics.reduce((sum, m) => sum + m.dataPoints, 0),

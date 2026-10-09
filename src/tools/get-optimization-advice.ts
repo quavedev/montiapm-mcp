@@ -8,6 +8,7 @@
 import { z } from 'zod';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
+import { mbToBytes } from '../utils/formatting.js';
 import { advisor } from '../knowledge/advisor.js';
 import type { MetricCategory, Severity, Recommendation } from '../knowledge/types.js';
 import {
@@ -380,9 +381,9 @@ async function analyzeSystemCategory(
   const avgCpu = cpuMetrics[0]?.p50 ?? 0;
   const maxCpu = cpuMetrics[0]?.p95 ?? 0;
 
-  // RAM is in bytes
-  const avgMemory = ramMetrics[0]?.p50 ?? 0;
-  const maxMemory = ramMetrics[0]?.p95 ?? 0;
+  // Monti reports RAM in MB; convert to bytes
+  const avgMemory = mbToBytes(ramMetrics[0]?.p50 ?? 0);
+  const maxMemory = mbToBytes(ramMetrics[0]?.p95 ?? 0);
 
   // Sessions is a count
   const avgSessions = sessionsMetrics[0]?.p50 ?? 0;

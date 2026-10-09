@@ -177,7 +177,7 @@ The same aggregated tables as the Monti dashboards. Use them to find what to opt
 | Tool | Description |
 |------|-------------|
 | `get_http_breakdown` | Rank HTTP routes by `IMPACT` (total time, default), `RES_TIME`, `DB`, `COMPUTE`, `ASYNC`, `HTTP_TIME`, `THROUGHPUT`, or `_1xx`..`_5xx` |
-| `get_method_breakdown` | Rank methods by `RESPONSE_TIME` (default), `DB_TIME`, `WAIT_TIME`, `COMPUTE_TIME`, `THROUGHPUT`, sizes, and more; rows include `estimatedTotalTime` |
+| `get_method_breakdown` | Rank methods by `RESPONSE_TIME` (default), `DB_TIME`, `WAIT_TIME`, `COMPUTE_TIME`, `THROUGHPUT`, sizes, and more; rows include `estimatedTotalTime` (an upper bound; see `estimatedTotalTimeSource`) |
 | `get_pub_breakdown` | Rank publications by `RESPONSE_TIME` (default), `SUB_RATE`, `FETCHED_DOCUMENTS`, `OBSERVER_REUSE_RATIO`, live document counts, sizes, and more |
 
 ### Metrics

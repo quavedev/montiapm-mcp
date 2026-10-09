@@ -34,6 +34,14 @@ export function formatBytes(bytes: number): string {
 }
 
 /**
+ * Convert megabytes to bytes. Monti reports system memory metrics
+ * (RAM_USAGE, *_SYSTEM_MEM) in MB.
+ */
+export function mbToBytes(mb: number): number {
+  return mb * 1024 * 1024;
+}
+
+/**
  * Format percentage
  */
 export function formatPercentage(value: number, decimals: number = 1): string {

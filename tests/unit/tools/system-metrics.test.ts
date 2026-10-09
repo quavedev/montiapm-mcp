@@ -16,11 +16,12 @@ describe('getSystemMetrics', () => {
         meteorSystemMetrics: [
           {
             host: 'server-1',
-            points: [[Date.now(), 1024 * 1024 * 512]],
-            p50: 1024 * 1024 * 500,
-            p95: 1024 * 1024 * 600,
-            p99: 1024 * 1024 * 650,
-            max: 1024 * 1024 * 700,
+            // Monti reports memory in MB
+            points: [[Date.now(), 512]],
+            p50: 500,
+            p95: 1702,
+            p99: 650,
+            max: 2048,
           },
         ],
       },
@@ -34,7 +35,20 @@ describe('getSystemMetrics', () => {
 
     expect(result.metric).toBe('RAM_USAGE');
     expect(result.hosts).toHaveLength(1);
-    expect(result.hosts[0].percentiles).toBeDefined();
+    expect(result.rawUnit).toBe('MB');
+    expect(result.hosts[0].percentiles).toMatchObject({ p50: '500.00 MB', p95: '1.66 GB', max: '2.00 GB' });
+    expect(result.hosts[0].rawPercentiles.p95).toBe(1702);
+    expect(result.summary.overallMax).toBe('2.00 GB');
+  });
+
+  it('formats system memory metrics from MB', async () => {
+    mockQuery.mockResolvedValueOnce({
+      data: { meteorSystemMetrics: [{ host: null, points: [], p50: 15987.1, p95: 15987.1, p99: 15987.1, max: 15987.1 }] },
+    });
+
+    const result = await getSystemMetrics(mockClient, { metric: 'TOTAL_SYSTEM_MEM' });
+
+    expect(result.hosts[0].percentiles.max).toBe('15.61 GB');
   });
 
   it('should return CPU metrics', async () => {
@@ -192,17 +206,17 @@ describe('getSystemMetrics', () => {
     expect(result.hosts[0].percentiles.p50).toBe('100');
   });
 
-  it('should return FREE_SYSTEM_MEM metrics in bytes format', async () => {
+  it('should return FREE_SYSTEM_MEM metrics formatted from MB', async () => {
     mockQuery.mockResolvedValueOnce({
       data: {
         meteorSystemMetrics: [
           {
             host: null,
-            points: [[Date.now(), 1024 * 1024 * 1024]],
-            p50: 1024 * 1024 * 1024,
-            p95: 1024 * 1024 * 900,
-            p99: 1024 * 1024 * 800,
-            max: 1024 * 1024 * 700,
+            points: [[Date.now(), 1024]],
+            p50: 1024,
+            p95: 900,
+            p99: 800,
+            max: 700,
           },
         ],
       },

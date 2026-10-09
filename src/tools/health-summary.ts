@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
-import { formatResponseTime, formatBytes, formatPercentage } from '../utils/formatting.js';
+import { formatResponseTime, formatBytes, formatPercentage, mbToBytes } from '../utils/formatting.js';
 import { REDIS_OPLOG_RECOMMENDATIONS } from '../knowledge/recommendations/index.js';
 
 export const getHealthSummarySchema = z.object({
@@ -229,7 +229,11 @@ export async function getHealthSummary(
   let sessionMetrics: SystemMetric | null = null;
 
   if (ramResult.status === 'fulfilled') {
-    ramMetrics = ramResult.value.data.meteorSystemMetrics[0] ?? null;
+    // Monti reports RAM in MB; convert to bytes for formatting and thresholds
+    const ramMb = ramResult.value.data.meteorSystemMetrics[0];
+    ramMetrics = ramMb
+      ? { p50: mbToBytes(ramMb.p50), p95: mbToBytes(ramMb.p95), max: mbToBytes(ramMb.max) }
+      : null;
   }
   if (cpuResult.status === 'fulfilled') {
     cpuMetrics = cpuResult.value.data.meteorSystemMetrics[0] ?? null;

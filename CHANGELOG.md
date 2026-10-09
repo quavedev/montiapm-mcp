@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.1
+
+- Fixed memory units. Monti reports `RAM_USAGE` and `TOTAL/FREE/USED_SYSTEM_MEM` in MB, but they were formatted as bytes, so 1,702 MB was shown as "1.66 KB". `get_system_metrics`, `get_health_summary`, `analyze_performance_bottlenecks` and `get_optimization_advice` now convert MB to bytes before formatting and before applying memory thresholds. `get_system_metrics` adds `rawUnit: "MB"` for memory metrics; `rawPercentiles` are unchanged.
+- Fixed `estimatedTotalTime` in the breakdown tools, which overstated rarely called items because Monti averages per-item throughput over active minutes. For HTTP routes, rows now include `totalResponseTime` from IMPACT, and `RES_TIME` estimates use it directly. Other estimates are capped at IMPACT when available. Each estimate has an `estimatedTotalTimeSource` (`impact` or `upperBound`), and responses with upper bounds include a `note`.
+
+See [#5](https://github.com/quavedev/montiapm-mcp/issues/5).
+
 ## 1.5.0
 
 - Added `get_http_breakdown`, `get_method_breakdown` and `get_pub_breakdown` tools. They rank every route, method or publication by a chosen field (impact, response time, DB/compute/wait time, throughput, status class, observer reuse, fetched documents, and more) using the aggregated breakdown queries behind the Monti dashboards. Per-request averages also include `estimatedTotalTime` (average × throughput × window).

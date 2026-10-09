@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { gql } from '@apollo/client/core';
 import type { MontiGraphQLClient } from '../graphql/client.js';
 import { getStartTime } from '../utils/date.js';
-import { formatResponseTime, formatBytes, formatPercentage } from '../utils/formatting.js';
+import { formatResponseTime, formatBytes, formatPercentage, mbToBytes } from '../utils/formatting.js';
 import { advisor } from '../knowledge/advisor.js';
 import { REDIS_OPLOG_RECOMMENDATIONS } from '../knowledge/recommendations/index.js';
 
@@ -242,7 +242,13 @@ export async function analyzeBottlenecks(
         }),
       ]);
 
-      const ramMetrics = ramResult.data.meteorSystemMetrics[0];
+      // Monti reports RAM in MB; convert to bytes for formatting and thresholds
+      const ramMb = ramResult.data.meteorSystemMetrics[0];
+      const ramMetrics = ramMb && {
+        p50: mbToBytes(ramMb.p50),
+        p95: mbToBytes(ramMb.p95),
+        max: mbToBytes(ramMb.max),
+      };
       const cpuMetrics = cpuResult.data.meteorSystemMetrics[0];
 
       if (ramMetrics) {
