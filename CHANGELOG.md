@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.2
+
+- The npm package now ships only the built `dist/` bundle, `README.md` and `CHANGELOG.md`, through a `files` list. Earlier versions also included `src/`, `tests/`, `scripts/` and config files.
+- Normalized the `bin` path to `dist/index.js` so `npm publish` no longer warns about it.
+
 ## 1.5.1
 
 - Fixed memory units. Monti reports `RAM_USAGE` and `TOTAL/FREE/USED_SYSTEM_MEM` in MB, but they were formatted as bytes, so 1,702 MB was shown as "1.66 KB". `get_system_metrics`, `get_health_summary`, `analyze_performance_bottlenecks` and `get_optimization_advice` now convert MB to bytes before formatting and before applying memory thresholds. `get_system_metrics` adds `rawUnit: "MB"` for memory metrics; `rawPercentiles` are unchanged.
