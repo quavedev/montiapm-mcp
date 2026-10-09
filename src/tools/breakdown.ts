@@ -230,6 +230,30 @@ function formatValue(unit: Unit, value: number | null): string {
   }
 }
 
+const UPPER_BOUND_NOTE =
+  'estimatedTotalTime with source "upperBound" is average × throughput × window. Monti averages throughput over the minutes an item was active, so this overstates rarely called items. Use IMPACT (get_http_breakdown) for real totals.';
+
+/** Total response time (ms) per HTTP route from the IMPACT ranking. */
+async function getHttpImpact(
+  client: MontiGraphQLClient,
+  variables: { startTime: number; endTime: number; host?: string },
+): Promise<Map<string, number>> {
+  try {
+    const { data } = await client.query<Record<string, BreakdownItem[]>>({
+      query: QUERIES.http.query,
+      variables: { ...variables, limit: 200, sortOrder: SortOrder.DSC, sortField: 'IMPACT' },
+    });
+    return new Map(
+      (data?.httpBreakdown ?? [])
+        .filter((item) => item.sortedValue !== null)
+        .map((item) => [item.name, item.sortedValue as number]),
+    );
+  } catch {
+    // Fall back to upper-bound estimates
+    return new Map();
+  }
+}
+
 async function getBreakdown(
   client: MontiGraphQLClient,
   kind: Kind,
@@ -259,26 +283,54 @@ async function getBreakdown(
 
   const unit = getBreakdownUnit(kind, input.sortField);
   const windowMinutes = (endTime - startTime) / 60000;
-  const rows = (data[field] ?? []).map((item) => ({
-    name: item.name,
-    value: item.sortedValue,
-    formattedValue: formatValue(unit, item.sortedValue),
-    throughputPerMin: item.throughput,
-    // For per-request averages, avg × throughput × window is the total time
-    // the item cost, which is what to optimize first.
-    ...(unit === 'avgMs' && item.sortedValue !== null && item.throughput !== null
-      ? {
-          estimatedTotalTime: formatResponseTime(item.sortedValue * item.throughput * windowMinutes),
-          estimatedTotalTimeMs: Math.round(item.sortedValue * item.throughput * windowMinutes),
-        }
-      : {}),
-  }));
+  // Monti averages per-item throughput over the minutes the item was active,
+  // so avg × throughput × window overstates rarely called items. For HTTP,
+  // IMPACT is the real total response time, so prefer it when available.
+  const impactByName =
+    kind === 'http' && unit === 'avgMs'
+      ? await getHttpImpact(client, { startTime, endTime, host: input.host })
+      : new Map<string, number>();
+  let hasUpperBound = false;
+  const rows = (data[field] ?? []).map((item) => {
+    const impact = impactByName.get(item.name);
+    let estimate: { ms: number; source: 'impact' | 'upperBound' } | null = null;
+    if (unit === 'avgMs' && item.sortedValue !== null) {
+      if (impact !== undefined && input.sortField === 'RES_TIME') {
+        estimate = { ms: impact, source: 'impact' };
+      } else if (item.throughput !== null) {
+        const upperBound = item.sortedValue * item.throughput * windowMinutes;
+        // A part of the response time can't exceed the total response time
+        estimate = {
+          ms: impact !== undefined ? Math.min(upperBound, impact) : upperBound,
+          source: 'upperBound',
+        };
+        hasUpperBound = true;
+      }
+    }
+    return {
+      name: item.name,
+      value: item.sortedValue,
+      formattedValue: formatValue(unit, item.sortedValue),
+      throughputPerMin: item.throughput,
+      ...(impact !== undefined
+        ? { totalResponseTime: formatResponseTime(impact), totalResponseTimeMs: Math.round(impact) }
+        : {}),
+      ...(estimate
+        ? {
+            estimatedTotalTime: formatResponseTime(estimate.ms),
+            estimatedTotalTimeMs: Math.round(estimate.ms),
+            estimatedTotalTimeSource: estimate.source,
+          }
+        : {}),
+    };
+  });
 
   return {
     sortField: input.sortField,
     unit,
     timeRange: { start: new Date(startTime).toISOString(), end: new Date(endTime).toISOString() },
     count: rows.length,
+    ...(hasUpperBound ? { note: UPPER_BOUND_NOTE } : {}),
     rows,
   };
 }

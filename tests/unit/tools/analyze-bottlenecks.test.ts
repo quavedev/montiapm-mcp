@@ -33,7 +33,7 @@ describe('analyzeBottlenecks', () => {
       })
       .mockResolvedValueOnce({
         data: {
-          meteorSystemMetrics: [{ p50: 1024 * 1024 * 500, p95: 1024 * 1024 * 700, max: 1024 * 1024 * 900 }],
+          meteorSystemMetrics: [{ p50: 500, p95: 700, max: 900 }],
         },
       });
 
@@ -60,7 +60,7 @@ describe('analyzeBottlenecks', () => {
         data: { meteorSystemMetrics: [{ p50: 30, p95: 50, max: 60 }] },
       })
       .mockResolvedValueOnce({
-        data: { meteorSystemMetrics: [{ p50: 1024 * 1024 * 500, p95: 1024 * 1024 * 600, max: 1024 * 1024 * 700 }] },
+        data: { meteorSystemMetrics: [{ p50: 500, p95: 600, max: 700 }] },
       });
 
     const result = await analyzeBottlenecks(mockClient, {});
@@ -84,7 +84,7 @@ describe('analyzeBottlenecks', () => {
         data: { meteorSystemMetrics: [{ p50: 30, p95: 50, max: 60 }] },
       })
       .mockResolvedValueOnce({
-        data: { meteorSystemMetrics: [{ p50: 1024 * 1024 * 500, p95: 1024 * 1024 * 600, max: 1024 * 1024 * 700 }] },
+        data: { meteorSystemMetrics: [{ p50: 500, p95: 600, max: 700 }] },
       });
 
     const result = await analyzeBottlenecks(mockClient, {});
@@ -101,7 +101,7 @@ describe('analyzeBottlenecks', () => {
         data: { meteorPubBreakdown: [] },
       })
       .mockResolvedValueOnce({
-        data: { meteorSystemMetrics: [{ p50: 1024 * 1024 * 500, p95: 1024 * 1024 * 600, max: 1024 * 1024 * 700 }] },
+        data: { meteorSystemMetrics: [{ p50: 500, p95: 600, max: 700 }] },
       })
       .mockResolvedValueOnce({
         data: { meteorSystemMetrics: [{ p50: 80, p95: 95, max: 100 }] },
@@ -123,9 +123,9 @@ describe('analyzeBottlenecks', () => {
       .mockResolvedValueOnce({
         data: {
           meteorSystemMetrics: [{
-            p50: 1024 * 1024 * 1024 * 1.2,
-            p95: 1024 * 1024 * 1024 * 1.8,
-            max: 1024 * 1024 * 1024 * 2.5
+            p50: 1024 * 1.2,
+            p95: 1024 * 1.8,
+            max: 1024 * 2.5
           }]
         },
       })
@@ -136,6 +136,8 @@ describe('analyzeBottlenecks', () => {
     const result = await analyzeBottlenecks(mockClient, {});
 
     expect(result.issues.some(i => i.category === 'Memory Usage')).toBe(true);
+    // Monti reports RAM in MB
+    expect(result.systemMetrics).toMatchObject({ memory: { p95: '1.80 GB', max: '2.50 GB' } });
   });
 
   it('should handle query errors gracefully', async () => {
@@ -181,7 +183,7 @@ describe('analyzeBottlenecks', () => {
         data: { meteorSystemMetrics: [{ p50: 30, p95: 50, max: 60 }] },
       })
       .mockResolvedValueOnce({
-        data: { meteorSystemMetrics: [{ p50: 1024 * 1024 * 500, p95: 1024 * 1024 * 600, max: 1024 * 1024 * 700 }] },
+        data: { meteorSystemMetrics: [{ p50: 500, p95: 600, max: 700 }] },
       });
 
     const result = await analyzeBottlenecks(mockClient, {});

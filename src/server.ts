@@ -306,7 +306,7 @@ export function createMontiMcpServer(options: MontiMcpServerOptions): McpServer 
     {
       title: 'Get Method Breakdown',
       description:
-        'Rank every Meteor method by one field over a time window (the Monti Methods dashboard table). Default sortField RESPONSE_TIME; each row also has estimatedTotalTime (average × throughput × window) to rank by impact. Use DB_TIME/WAIT_TIME/COMPUTE_TIME/HTTP_TIME to see where time goes, THROUGHPUT for volume. Works even when get_method_traces is empty. IMPORTANT: Default time range is last 1 hour.',
+        'Rank every Meteor method by one field over a time window (the Monti Methods dashboard table). Default sortField RESPONSE_TIME; each row also has estimatedTotalTime (average × throughput × window), an upper bound that overstates rarely called methods because Monti averages throughput over active minutes. Use DB_TIME/WAIT_TIME/COMPUTE_TIME/HTTP_TIME to see where time goes, THROUGHPUT for volume. Works even when get_method_traces is empty. IMPORTANT: Default time range is last 1 hour.',
     },
     getMethodBreakdownSchema,
     (client, input) => getMethodBreakdown(client, input),

@@ -247,7 +247,7 @@ Use \`analyze_performance_bottlenecks\` to find:
 ### 3. Rank What Costs the Most
 Use the breakdown tools before traces; they always have data:
 - \`get_http_breakdown\` (sortField IMPACT, then DB/COMPUTE for the top routes)
-- \`get_method_breakdown\` (RESPONSE_TIME or DB_TIME; compare estimatedTotalTime)
+- \`get_method_breakdown\` (RESPONSE_TIME or DB_TIME; estimatedTotalTime is an upper bound, high for rarely called methods)
 - \`get_pub_breakdown\` (RESPONSE_TIME, FETCHED_DOCUMENTS, OBSERVER_REUSE_RATIO)
 - \`get_http_metrics\` for one route's trend over time
 

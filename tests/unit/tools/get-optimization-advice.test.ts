@@ -231,7 +231,7 @@ describe('getOptimizationAdvice', () => {
       mockQuery.mockResolvedValueOnce({
         data: {
           meteorSystemMetrics: [
-            { host: null, points: [], p50: 1.8e9, p95: 1.9e9, p99: 2e9, max: 2.1e9 },
+            { host: null, points: [], p50: 1800, p95: 1900, p99: 2000, max: 2100 },
           ],
         },
       });
@@ -248,6 +248,8 @@ describe('getOptimizationAdvice', () => {
       expect(result.category).toBe('system');
       // High CPU (85%) and high memory (1.8GB) should generate issues
       expect(result.issues.length).toBeGreaterThan(0);
+      // Monti reports RAM in MB: 1800 MB is high memory, not 1.8 KB
+      expect(result.issues.some((i) => 'metric' in i && i.metric === 'Memory')).toBe(true);
     });
 
     it('should handle empty system metrics', async () => {

@@ -20,7 +20,7 @@ describe('getHealthSummary', () => {
     return [
       { data: { meteorMethodBreakdown: overrides.methods ?? [] } },
       { data: { meteorErrorMetrics: [overrides.errors ?? { points: [] }] } },
-      { data: { meteorSystemMetrics: [overrides.ram ?? { p50: 512 * 1024 * 1024, p95: 600 * 1024 * 1024, max: 700 * 1024 * 1024 }] } },
+      { data: { meteorSystemMetrics: [overrides.ram ?? { p50: 512, p95: 600, max: 700 }] } },
       { data: { meteorSystemMetrics: [overrides.cpu ?? { p50: 30, p95: 50, max: 60 }] } },
       { data: { meteorSystemMetrics: [overrides.sessions ?? { p50: 100, p95: 150, max: 200 }] } },
     ];
@@ -59,7 +59,7 @@ describe('getHealthSummary', () => {
       ],
       errors: { points: [] },
       cpu: { p50: 20, p95: 30, max: 40 },
-      ram: { p50: 100 * 1024 * 1024, p95: 200 * 1024 * 1024, max: 300 * 1024 * 1024 },
+      ram: { p50: 100, p95: 200, max: 300 },
     });
 
     mockQuery
@@ -166,7 +166,7 @@ describe('getHealthSummary', () => {
   it('should generate memory insight when p95 is high', async () => {
     const responses = createMockResponses({
       methods: [{ name: 'method1', sortedValue: 50, throughput: 10 }],
-      ram: { p50: 1024 * 1024 * 1024, p95: 2 * 1024 * 1024 * 1024, max: 2.5 * 1024 * 1024 * 1024 },
+      ram: { p50: 1024, p95: 2 * 1024, max: 2.5 * 1024 },
     });
 
     mockQuery
@@ -179,6 +179,8 @@ describe('getHealthSummary', () => {
     const result = await getHealthSummary(mockClient, {});
 
     expect(result.insights.some(i => i.toLowerCase().includes('memory'))).toBe(true);
+    // Monti reports RAM in MB
+    expect(result.system.memory).toMatchObject({ p50: '1.00 GB', p95: '2.00 GB', max: '2.50 GB' });
   });
 
   it('should generate error insight when errors are detected', async () => {
@@ -204,7 +206,7 @@ describe('getHealthSummary', () => {
       methods: [{ name: 'method1', sortedValue: 50, throughput: 10 }],
       errors: { points: [] },
       cpu: { p50: 20, p95: 30, max: 40 },
-      ram: { p50: 100 * 1024 * 1024, p95: 200 * 1024 * 1024, max: 300 * 1024 * 1024 },
+      ram: { p50: 100, p95: 200, max: 300 },
     });
 
     mockQuery
@@ -224,7 +226,7 @@ describe('getHealthSummary', () => {
       methods: [{ name: 'method1', sortedValue: 600, throughput: 10 }], // Slow response time
       errors: { points: [1, 2, 3] }, // Some errors
       cpu: { p50: 50, p95: 60, max: 70 },
-      ram: { p50: 500 * 1024 * 1024, p95: 600 * 1024 * 1024, max: 700 * 1024 * 1024 },
+      ram: { p50: 500, p95: 600, max: 700 },
     });
 
     mockQuery
@@ -245,7 +247,7 @@ describe('getHealthSummary', () => {
       methods: [{ name: 'method1', sortedValue: 600, throughput: 10 }], // Slow response time (-20)
       errors: { points: Array(20).fill(5) }, // Many errors (-15)
       cpu: { p50: 80, p95: 75, max: 85 }, // Moderate CPU (-10)
-      ram: { p50: 500 * 1024 * 1024, p95: 600 * 1024 * 1024, max: 700 * 1024 * 1024 },
+      ram: { p50: 500, p95: 600, max: 700 },
     });
 
     mockQuery
@@ -266,7 +268,7 @@ describe('getHealthSummary', () => {
       methods: [{ name: 'method1', sortedValue: 600, throughput: 10 }], // Slow response time (-20)
       errors: { points: Array(200).fill(10) }, // Many errors (-30)
       cpu: { p50: 95, p95: 95, max: 100 }, // High CPU (-20)
-      ram: { p50: 2.5 * 1024 * 1024 * 1024, p95: 3 * 1024 * 1024 * 1024, max: 3.5 * 1024 * 1024 * 1024 }, // High memory (-20)
+      ram: { p50: 2.5 * 1024, p95: 3 * 1024, max: 3.5 * 1024 }, // High memory (-20)
     });
 
     mockQuery
